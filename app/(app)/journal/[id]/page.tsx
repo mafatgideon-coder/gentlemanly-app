@@ -3,17 +3,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import { formatDate } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
 import { notFound } from "next/navigation"
 import type { WardrobeItem } from "@/lib/types"
-
-const CATEGORY_LABELS: Record<string, string> = {
-  tops: "Top",
-  bottoms: "Bottom",
-  outerwear: "Outerwear",
-  footwear: "Footwear",
-  accessories: "Accessory",
-}
 
 export default async function OutfitDetailPage({
   params,
@@ -41,10 +32,12 @@ export default async function OutfitDetailPage({
   const items: WardrobeItem[] =
     outfitItems?.map((oi: { wardrobe_items: unknown }) => oi.wardrobe_items as WardrobeItem) ?? []
 
+  const displayImage = outfit.flatlay_url ?? outfit.photo_url
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[oklch(0.965_0.003_247)]">
       {/* Back nav */}
-      <div className="px-5 pt-12 pb-4">
+      <div className="px-5 pt-12 pb-2">
         <Link
           href="/journal"
           className="inline-flex items-center gap-2 text-[oklch(0.6_0.006_255)] hover:text-[oklch(0.28_0.008_255)] transition-colors text-sm"
@@ -54,79 +47,65 @@ export default async function OutfitDetailPage({
         </Link>
       </div>
 
-      {/* Flat-lay */}
-      <div className="relative aspect-square w-full bg-[oklch(0.93_0.003_247)]">
-        {outfit.flatlay_url || outfit.photo_url ? (
-          <Image
-            src={outfit.flatlay_url ?? outfit.photo_url}
-            alt={outfit.occasion ?? "Outfit"}
-            fill
-            className="object-cover"
-            priority
-          />
-        ) : null}
+      {/* Occasion label */}
+      <div className="px-5 pt-4 pb-3">
+        {outfit.occasion && (
+          <p className="text-sm text-[oklch(0.58_0.006_255)]">{outfit.occasion}</p>
+        )}
+        <p className="text-xs text-[oklch(0.65_0.006_255)] mt-0.5">
+          {formatDate(outfit.logged_at)}
+        </p>
       </div>
 
-      {/* Detail */}
-      <div className="px-5 pt-6 pb-10 space-y-6">
-        {/* Date + occasion */}
-        <div className="space-y-1">
-          {outfit.occasion && (
-            <p className="text-[10px] tracking-[0.25em] uppercase text-[oklch(0.52_0.012_255)]">
-              {outfit.occasion}
-            </p>
-          )}
-          <p className="text-xl font-light text-[oklch(0.18_0.008_255)]">
-            {formatDate(outfit.logged_at)}
-          </p>
-        </div>
-
-        {/* Notes */}
-        {outfit.notes && (
-          <div className="space-y-1">
-            <p className="text-[10px] tracking-[0.2em] uppercase text-[oklch(0.52_0.012_255)]">
-              Notes
-            </p>
-            <p className="text-sm text-[oklch(0.45_0.008_255)] leading-relaxed">
-              {outfit.notes}
-            </p>
-          </div>
-        )}
-
-        {/* Items list */}
-        {items.length > 0 && (
-          <div className="space-y-2">
-            <p className="text-[10px] tracking-[0.2em] uppercase text-[oklch(0.52_0.012_255)]">
-              Clothing Items
-            </p>
-            <div className="divide-y divide-[oklch(0.88_0.006_255)]">
-              {items.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-center gap-3 py-3"
-                >
-                  <Badge
-                    variant="secondary"
-                    className="text-[9px] tracking-wider uppercase shrink-0 bg-[oklch(0.91_0.005_247)] text-[oklch(0.52_0.012_255)] border-0"
-                  >
-                    {CATEGORY_LABELS[item.category] ?? item.category}
-                  </Badge>
-                  <div className="min-w-0">
-                    <p className="text-sm text-[oklch(0.22_0.008_255)] truncate">
-                      {item.name}
-                    </p>
-                    {item.color && (
-                      <p className="text-xs text-[oklch(0.6_0.006_255)] capitalize">
-                        {item.color}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ))}
+      {/* Flat-lay card */}
+      <div className="px-4">
+        <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-[oklch(0.935_0.005_247)] shadow-sm">
+          {displayImage ? (
+            <Image
+              src={displayImage}
+              alt={outfit.occasion ?? "Outfit"}
+              fill
+              className="object-cover"
+              priority
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <p className="text-[oklch(0.65_0.006_255)] text-sm">No image</p>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
+
+      {/* Notes */}
+      {outfit.notes && (
+        <div className="px-5 pt-5">
+          <p className="text-sm text-[oklch(0.52_0.008_255)] leading-relaxed">{outfit.notes}</p>
+        </div>
+      )}
+
+      {/* WORN section */}
+      {items.length > 0 && (
+        <div className="pt-6 pb-24">
+          <p className="px-5 text-[11px] tracking-[0.2em] uppercase text-[oklch(0.52_0.012_255)] mb-3">
+            Worn
+          </p>
+          <div className="flex gap-3 overflow-x-auto px-5 pb-2 scrollbar-none">
+            {items.map((item) => (
+              <div key={item.id} className="shrink-0 w-28">
+                {/* Item image placeholder */}
+                <div className="w-28 h-28 rounded-xl bg-[oklch(0.93_0.003_247)] flex items-end p-2 overflow-hidden mb-2">
+                  <span className="text-[9px] tracking-wider uppercase text-[oklch(0.55_0.006_255)]">
+                    {item.category}
+                  </span>
+                </div>
+                <p className="text-xs text-[oklch(0.28_0.008_255)] leading-snug line-clamp-2">
+                  {item.name}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

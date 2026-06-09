@@ -10,14 +10,6 @@ export async function POST(request: Request) {
   const { photo_url } = await request.json()
   if (!photo_url) return NextResponse.json({ error: "photo_url required" }, { status: 400 })
 
-  // Get a signed URL so OpenAI can access the private Supabase Storage file
-  const path = photo_url.split("/outfit-photos/")[1]
-  const { data: signed } = await supabase.storage
-    .from("outfit-photos")
-    .createSignedUrl(path, 300)
-
-  const accessUrl = signed?.signedUrl ?? photo_url
-
-  const items = await detectClothing(accessUrl)
+  const items = await detectClothing(photo_url)
   return NextResponse.json({ items })
 }

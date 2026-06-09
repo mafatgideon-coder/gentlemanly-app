@@ -102,14 +102,20 @@ export function OutfitLogger({ open, onOpenChange }: OutfitLoggerProps) {
       return
     }
 
-    const storageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/outfit-photos/${storagePath}`
-    setPhotoUrl(storageUrl)
+    // Store a signed URL so the image is accessible everywhere
+    const { data: signedData } = await supabase.storage
+      .from("outfit-photos")
+      .createSignedUrl(storagePath, 60 * 60 * 24 * 365)
+
+    const accessibleUrl = signedData?.signedUrl
+      ?? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/outfit-photos/${storagePath}`
+    setPhotoUrl(accessibleUrl)
 
     setProgress("detecting")
     const detectRes = await fetch("/api/ai/detect", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ photo_url: storageUrl }),
+      body: JSON.stringify({ photo_url: accessibleUrl }),
     })
     const { items } = await detectRes.json()
     setDetectedItems(items ?? [])
