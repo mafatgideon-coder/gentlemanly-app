@@ -99,12 +99,8 @@ export async function POST(request: Request) {
       const service = serviceClient()
       console.log("[flatlay] generating for outfit", outfit.id)
 
-      const dalleUrl = await generateFlatlay(items)
-      console.log("[flatlay] DALL-E returned URL", dalleUrl.slice(0, 60))
-
-      const imageRes = await fetch(dalleUrl)
-      const imageBuffer = Buffer.from(await imageRes.arrayBuffer())
-      console.log("[flatlay] image downloaded, bytes:", imageBuffer.byteLength)
+      const imageBuffer = await generateFlatlay(items)
+      console.log("[flatlay] image generated, bytes:", imageBuffer.byteLength)
 
       const storagePath = `${user.id}/${outfit.id}/flatlay.png`
       const { error: uploadErr } = await service.storage

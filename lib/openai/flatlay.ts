@@ -5,24 +5,20 @@ const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
 export function buildFlatlayPrompt(items: DetectedItem[]): string {
   const itemDescriptions = items.map((item) => item.description).join(", ")
-
-  return `Editorial menswear flat-lay photograph on a clean off-white linen background. Premium product photography in the style of Mr Porter or Matches Fashion. Neatly arranged clothing items laid flat with clean spacing: ${itemDescriptions}. Soft diffused natural lighting from above. No shadows. No human models. No text. No brand logos visible. Square composition. Quiet luxury aesthetic. High-end fashion editorial photography.`
+  return `Editorial menswear flat-lay photograph on a clean off-white linen background. Premium product photography in the style of Mr Porter or Matches Fashion. Neatly arranged clothing items laid flat with clean spacing: ${itemDescriptions}. Soft diffused natural lighting from above. No shadows. No human models. No text. No brand logos visible. Square composition. Quiet luxury aesthetic.`
 }
 
-export async function generateFlatlay(items: DetectedItem[]): Promise<string> {
+export async function generateFlatlay(items: DetectedItem[]): Promise<Buffer> {
   const prompt = buildFlatlayPrompt(items)
 
   const response = await client.images.generate({
-    model: "dall-e-3",
+    model: "gpt-image-1",
     prompt,
     n: 1,
     size: "1024x1024",
-    quality: "standard",
-    style: "natural",
   })
 
-  const imageUrl = response.data?.[0]?.url
-  if (!imageUrl) throw new Error("DALL-E returned no image URL")
-
-  return imageUrl
+  const b64 = response.data?.[0]?.b64_json
+  if (!b64) throw new Error("gpt-image-1 returned no image data")
+  return Buffer.from(b64, "base64")
 }
