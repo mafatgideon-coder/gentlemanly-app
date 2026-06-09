@@ -143,8 +143,8 @@ export async function POST(request: Request) {
 
       // Crop individual items from flat-lay for any item missing an image
       if (itemsNeedingImages.length > 0) {
-        console.log("[wardrobe-crop] cropping", itemsNeedingImages.length, "items")
-        await cropAndStoreWardrobeImages(itemsNeedingImages, flatlayBuffer, user.id, service)
+        console.log("[wardrobe-img] generating", itemsNeedingImages.length, "item images")
+        await cropAndStoreWardrobeImages(itemsNeedingImages, photoBuffer, user.id, service)
       }
     }
 
