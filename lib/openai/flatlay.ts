@@ -4,7 +4,9 @@ import type { DetectedItem } from "@/lib/types"
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
 export function buildFlatlayPrompt(items: DetectedItem[]): string {
-  const itemDescriptions = items.map((item) => item.description).join(", ")
+  const itemDescriptions = items.length > 0
+    ? items.map((item) => item.description).join(", ")
+    : "a complete menswear outfit"
   return `Editorial menswear flat-lay photograph on a clean off-white linen background. Premium product photography in the style of Mr Porter or Matches Fashion. Neatly arranged clothing items laid flat with clean spacing: ${itemDescriptions}. Soft diffused natural lighting from above. No shadows. No human models. No text. No brand logos visible. Square composition. Quiet luxury aesthetic.`
 }
 

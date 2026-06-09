@@ -94,41 +94,39 @@ export async function POST(request: Request) {
   }
 
   let flatlayUrl: string | null = null
-  if (items.length > 0) {
-    try {
-      const service = serviceClient()
-      console.log("[flatlay] generating for outfit", outfit.id)
+  try {
+    const service = serviceClient()
+    console.log("[flatlay] generating for outfit", outfit.id, "| items:", items.length)
 
-      const imageBuffer = await generateFlatlay(items)
-      console.log("[flatlay] image generated, bytes:", imageBuffer.byteLength)
+    const imageBuffer = await generateFlatlay(items)
+    console.log("[flatlay] image generated, bytes:", imageBuffer.byteLength)
 
-      const storagePath = `${user.id}/${outfit.id}/flatlay.png`
-      const { error: uploadErr } = await service.storage
+    const storagePath = `${user.id}/${outfit.id}/flatlay.png`
+    const { error: uploadErr } = await service.storage
+      .from("flatlay-images")
+      .upload(storagePath, imageBuffer, { contentType: "image/png", upsert: true })
+
+    if (uploadErr) {
+      console.error("[flatlay] upload error:", uploadErr.message)
+    } else {
+      const { data: signed } = await service.storage
         .from("flatlay-images")
-        .upload(storagePath, imageBuffer, { contentType: "image/png", upsert: true })
+        .createSignedUrl(storagePath, 60 * 60 * 24 * 365)
 
-      if (uploadErr) {
-        console.error("[flatlay] upload error:", uploadErr.message)
-      } else {
-        const { data: signed } = await service.storage
-          .from("flatlay-images")
-          .createSignedUrl(storagePath, 60 * 60 * 24 * 365)
+      flatlayUrl = signed?.signedUrl ?? null
+      console.log("[flatlay] signed URL created:", !!flatlayUrl)
 
-        flatlayUrl = signed?.signedUrl ?? null
-        console.log("[flatlay] signed URL created:", !!flatlayUrl)
-
-        if (flatlayUrl) {
-          await service.from("outfits").update({ flatlay_url: flatlayUrl }).eq("id", outfit.id)
-          console.log("[flatlay] outfit updated with flatlay_url")
-        }
+      if (flatlayUrl) {
+        await service.from("outfits").update({ flatlay_url: flatlayUrl }).eq("id", outfit.id)
+        console.log("[flatlay] outfit updated with flatlay_url")
       }
-
-      if (photo_storage_path) {
-        await service.storage.from("outfit-photos").remove([photo_storage_path])
-      }
-    } catch (err) {
-      console.error("[flatlay] error:", err instanceof Error ? err.message : err)
     }
+
+    if (photo_storage_path) {
+      await service.storage.from("outfit-photos").remove([photo_storage_path])
+    }
+  } catch (err) {
+    console.error("[flatlay] error:", err instanceof Error ? err.message : err)
   }
 
   return NextResponse.json({ outfit: { ...outfit, flatlay_url: flatlayUrl } })
