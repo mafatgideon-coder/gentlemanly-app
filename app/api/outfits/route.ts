@@ -1,4 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
+import { createClient as createServiceClient } from "@supabase/supabase-js"
+import { after } from "next/server"
+import { generateFlatlay } from "@/lib/openai/flatlay"
 import { NextResponse } from "next/server"
 import type { DetectedItem } from "@/lib/types"
 
@@ -9,7 +12,7 @@ export async function GET() {
 
   const { data: outfits, error } = await supabase
     .from("outfits")
-    .select("id, flatlay_url, occasion, logged_at, item_count")
+    .select("id, flatlay_url, photo_url, occasion, logged_at, item_count")
     .eq("user_id", user.id)
     .order("logged_at", { ascending: false })
 
@@ -25,25 +28,25 @@ export async function POST(request: Request) {
 
   const {
     photo_url,
-    flatlay_url,
     occasion,
     notes,
     items,
+    photo_storage_path,
   }: {
     photo_url: string
-    flatlay_url: string | null
     occasion: string | null
     notes: string | null
     items: DetectedItem[]
+    photo_storage_path: string | null
   } = await request.json()
 
-  // Insert outfit record
+  // Save outfit immediately
   const { data: outfit, error: outfitError } = await supabase
     .from("outfits")
     .insert({
       user_id: user.id,
       photo_url,
-      flatlay_url,
+      flatlay_url: null,
       occasion,
       notes,
       item_count: items.length,
@@ -55,11 +58,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: outfitError.message }, { status: 500 })
   }
 
-  // Upsert wardrobe items and link to outfit
+  // Upsert wardrobe items
   const wardrobeIds: string[] = []
-
   for (const item of items) {
-    // Try to find existing item (by name + category for this user)
     const { data: existing } = await supabase
       .from("wardrobe_items")
       .select("id, wear_count")
@@ -69,17 +70,12 @@ export async function POST(request: Request) {
       .maybeSingle()
 
     if (existing) {
-      // Increment wear count
       await supabase
         .from("wardrobe_items")
-        .update({
-          wear_count: existing.wear_count + 1,
-          last_worn: new Date().toISOString(),
-        })
+        .update({ wear_count: existing.wear_count + 1, last_worn: new Date().toISOString() })
         .eq("id", existing.id)
       wardrobeIds.push(existing.id)
     } else {
-      // Create new wardrobe item
       const { data: newItem } = await supabase
         .from("wardrobe_items")
         .insert({
@@ -92,19 +88,53 @@ export async function POST(request: Request) {
         })
         .select("id")
         .single()
-
       if (newItem) wardrobeIds.push(newItem.id)
     }
   }
 
-  // Create outfit_items junction records
   if (wardrobeIds.length) {
     await supabase.from("outfit_items").insert(
-      wardrobeIds.map((wardrobe_item_id) => ({
-        outfit_id: outfit.id,
-        wardrobe_item_id,
-      }))
+      wardrobeIds.map((wardrobe_item_id) => ({ outfit_id: outfit.id, wardrobe_item_id }))
     )
+  }
+
+  // Generate flatlay AFTER response is sent — runs on the server, never blocks the client
+  if (items.length > 0) {
+    const outfitId = outfit.id
+    const userId = user.id
+
+    after(async () => {
+      try {
+        const service = createServiceClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY!
+        )
+
+        const dalleUrl = await generateFlatlay(items)
+        const imageRes = await fetch(dalleUrl)
+        const imageBuffer = Buffer.from(await imageRes.arrayBuffer())
+
+        const storagePath = `${userId}/${outfitId}/flatlay.png`
+        await service.storage
+          .from("flatlay-images")
+          .upload(storagePath, imageBuffer, { contentType: "image/png", upsert: true })
+
+        const { data: signed } = await service.storage
+          .from("flatlay-images")
+          .createSignedUrl(storagePath, 60 * 60 * 24 * 365)
+
+        if (signed?.signedUrl) {
+          await service.from("outfits").update({ flatlay_url: signed.signedUrl }).eq("id", outfitId)
+        }
+
+        // Delete original photo
+        if (photo_storage_path) {
+          await service.storage.from("outfit-photos").remove([photo_storage_path])
+        }
+      } catch (err) {
+        console.error("[flatlay background]", err)
+      }
+    })
   }
 
   return NextResponse.json({ outfit })

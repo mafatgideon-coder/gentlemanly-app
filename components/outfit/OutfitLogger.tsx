@@ -140,37 +140,22 @@ export function OutfitLogger({ open, onOpenChange }: OutfitLoggerProps) {
     setStep("saving")
     setProgress("saving")
 
-    // Save outfit immediately — no waiting for flatlay
-    const res = await fetch("/api/outfits", {
+    // Save outfit — server handles flatlay generation in background via after()
+    await fetch("/api/outfits", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         photo_url: photoUrl,
-        flatlay_url: null,
         occasion: occasion || null,
         notes: notes || null,
         items: detectedItems,
+        photo_storage_path: photoStoragePath,
       }),
     })
-    const { outfit } = await res.json()
 
-    // Close and navigate right away
     handleClose()
     router.refresh()
     router.push("/today")
-
-    // Fire flatlay generation in background — updates outfit when ready, then deletes original
-    if (detectedItems.length > 0 && outfit?.id) {
-      fetch("/api/ai/flatlay", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items: detectedItems,
-          outfit_id: outfit.id,
-          photo_storage_path: photoStoragePath,
-        }),
-      }).catch(() => {})
-    }
   }
 
   const isBusy = step === "processing" || step === "saving"
