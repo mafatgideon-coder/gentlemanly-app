@@ -29,12 +29,7 @@ export async function POST(request: Request) {
   )
 
   try {
-    // Generate flat-lay with DALL-E 3
-    const dalleUrl = await generateFlatlay(items)
-
-    // Download the generated image
-    const imageRes = await fetch(dalleUrl)
-    const imageBuffer = Buffer.from(await imageRes.arrayBuffer())
+    const imageBuffer = await generateFlatlay(items)
 
     // Upload to Supabase Storage
     const storagePath = `${user.id}/${outfit_id}/flatlay.png`
