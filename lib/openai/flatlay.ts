@@ -13,10 +13,12 @@ export async function generateFlatlay(items: DetectedItem[]): Promise<string> {
   const prompt = buildFlatlayPrompt(items)
 
   const response = await client.images.generate({
-    model: "dall-e-2",
-    prompt: prompt.slice(0, 1000), // DALL-E 2 has 1000 char limit
+    model: "dall-e-3",
+    prompt,
     n: 1,
-    size: "512x512",
+    size: "1024x1024",
+    quality: "standard",
+    style: "natural",
   })
 
   const imageUrl = response.data?.[0]?.url

@@ -17,10 +17,11 @@ export async function GET() {
   try {
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
     const response = await client.images.generate({
-      model: "dall-e-2",
+      model: "dall-e-3",
       prompt: "A white dress shirt laid flat on a light grey background. Editorial menswear photography.",
       n: 1,
-      size: "512x512",
+      size: "1024x1024",
+      quality: "standard",
     })
     dalleUrl = response.data?.[0]?.url ?? null
     results.dalle = dalleUrl ? "OK — " + dalleUrl.slice(0, 60) + "..." : "no URL returned"
