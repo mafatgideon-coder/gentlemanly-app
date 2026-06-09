@@ -55,14 +55,14 @@ export async function POST(request: Request) {
 
   if (outfitError) return NextResponse.json({ error: outfitError.message }, { status: 500 })
 
-  // Upsert wardrobe items — track which are brand new (need images)
+  // Upsert wardrobe items — crop images for new items OR existing items missing an image
   const wardrobeIds: string[] = []
-  const newWardrobeItems: Array<{ id: string; name: string; category: string }> = []
+  const itemsNeedingImages: Array<{ id: string; name: string; category: string }> = []
 
   for (const item of items) {
     const { data: existing } = await supabase
       .from("wardrobe_items")
-      .select("id, wear_count")
+      .select("id, wear_count, image_url")
       .eq("user_id", user.id)
       .eq("name", item.name)
       .eq("category", item.category)
@@ -74,6 +74,9 @@ export async function POST(request: Request) {
         .update({ wear_count: existing.wear_count + 1, last_worn: new Date().toISOString() })
         .eq("id", existing.id)
       wardrobeIds.push(existing.id)
+      if (!existing.image_url) {
+        itemsNeedingImages.push({ id: existing.id, name: item.name, category: item.category })
+      }
     } else {
       const { data: newItem } = await supabase
         .from("wardrobe_items")
@@ -89,7 +92,7 @@ export async function POST(request: Request) {
         .single()
       if (newItem) {
         wardrobeIds.push(newItem.id)
-        newWardrobeItems.push({ id: newItem.id, name: item.name, category: item.category })
+        itemsNeedingImages.push({ id: newItem.id, name: item.name, category: item.category })
       }
     }
   }
@@ -138,10 +141,10 @@ export async function POST(request: Request) {
         console.log("[flatlay] outfit updated with flatlay_url")
       }
 
-      // Crop individual items from the flat-lay for new wardrobe items
-      if (newWardrobeItems.length > 0) {
-        console.log("[wardrobe-crop] cropping", newWardrobeItems.length, "new items")
-        await cropAndStoreWardrobeImages(newWardrobeItems, flatlayBuffer, user.id, service)
+      // Crop individual items from flat-lay for any item missing an image
+      if (itemsNeedingImages.length > 0) {
+        console.log("[wardrobe-crop] cropping", itemsNeedingImages.length, "items")
+        await cropAndStoreWardrobeImages(itemsNeedingImages, flatlayBuffer, user.id, service)
       }
     }
 
