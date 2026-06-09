@@ -1,0 +1,13 @@
+{
+  "functions": {
+    "app/api/ai/detect/route.ts": {
+      "maxDuration": 60
+    },
+    "app/api/ai/flatlay/route.ts": {
+      "maxDuration": 120
+    },
+    "app/api/outfits/route.ts": {
+      "maxDuration": 30
+    }
+  }
+}
