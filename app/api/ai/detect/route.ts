@@ -10,6 +10,16 @@ export async function POST(request: Request) {
   const { photo_url } = await request.json()
   if (!photo_url) return NextResponse.json({ error: "photo_url required" }, { status: 400 })
 
-  const items = await detectClothing(photo_url)
-  return NextResponse.json({ items })
+  if (!process.env.OPENAI_API_KEY) {
+    return NextResponse.json({ error: "OPENAI_API_KEY not configured" }, { status: 500 })
+  }
+
+  try {
+    const items = await detectClothing(photo_url)
+    return NextResponse.json({ items })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    console.error("[detect]", message)
+    return NextResponse.json({ error: message }, { status: 500 })
+  }
 }

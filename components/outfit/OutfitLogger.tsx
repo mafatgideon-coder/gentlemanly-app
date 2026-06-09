@@ -43,10 +43,12 @@ export function OutfitLogger({ open, onOpenChange }: OutfitLoggerProps) {
   const [step, setStep] = useState<Step>("idle")
   const [preview, setPreview] = useState<string | null>(null)
   const [photoUrl, setPhotoUrl] = useState<string | null>(null)
+  const [photoStoragePath, setPhotoStoragePath] = useState<string | null>(null)
   const [detectedItems, setDetectedItems] = useState<DetectedItem[]>([])
   const [occasion, setOccasion] = useState<string>("")
   const [notes, setNotes] = useState("")
   const [progressKey, setProgressKey] = useState<ProgressKey | null>(null)
+  const [detectError, setDetectError] = useState<string | null>(null)
 
   function setProgress(key: ProgressKey) {
     setProgressKey(key)
@@ -56,10 +58,12 @@ export function OutfitLogger({ open, onOpenChange }: OutfitLoggerProps) {
     setStep("idle")
     setPreview(null)
     setPhotoUrl(null)
+    setPhotoStoragePath(null)
     setDetectedItems([])
     setOccasion("")
     setNotes("")
     setProgressKey(null)
+    setDetectError(null)
   }
 
   function handleClose() {
@@ -110,15 +114,24 @@ export function OutfitLogger({ open, onOpenChange }: OutfitLoggerProps) {
     const accessibleUrl = signedData?.signedUrl
       ?? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/outfit-photos/${storagePath}`
     setPhotoUrl(accessibleUrl)
+    setPhotoStoragePath(storagePath)
 
     setProgress("detecting")
+    setDetectError(null)
     const detectRes = await fetch("/api/ai/detect", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ photo_url: accessibleUrl }),
     })
-    const { items } = await detectRes.json()
-    setDetectedItems(items ?? [])
+    const detectData = await detectRes.json()
+
+    if (!detectRes.ok) {
+      setDetectError(detectData.error ?? "Detection failed")
+      setStep("details") // still let them save manually
+      return
+    }
+
+    setDetectedItems(detectData.items ?? [])
     setStep("details")
   }
 
@@ -146,12 +159,16 @@ export function OutfitLogger({ open, onOpenChange }: OutfitLoggerProps) {
     router.refresh()
     router.push("/today")
 
-    // Fire flatlay generation in background — updates outfit when ready
+    // Fire flatlay generation in background — updates outfit when ready, then deletes original
     if (detectedItems.length > 0 && outfit?.id) {
       fetch("/api/ai/flatlay", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items: detectedItems, outfit_id: outfit.id }),
+        body: JSON.stringify({
+          items: detectedItems,
+          outfit_id: outfit.id,
+          photo_storage_path: photoStoragePath,
+        }),
       }).catch(() => {})
     }
   }
@@ -248,6 +265,13 @@ export function OutfitLogger({ open, onOpenChange }: OutfitLoggerProps) {
         {/* Details form — shown after detection */}
         {step === "details" && (
           <div className="space-y-5">
+            {/* Detection error */}
+            {detectError && (
+              <div className="rounded-lg bg-[oklch(0.22_0.04_20)] border border-[oklch(0.35_0.08_20)] px-3 py-2">
+                <p className="text-xs text-[oklch(0.75_0.08_20)]">AI error: {detectError}</p>
+              </div>
+            )}
+
             {/* Detected items summary */}
             {detectedItems.length > 0 && (
               <div className="space-y-2">
