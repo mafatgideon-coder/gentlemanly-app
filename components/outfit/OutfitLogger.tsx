@@ -6,7 +6,8 @@ import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { X, Camera, Loader2 } from "lucide-react"
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { X, ImagePlus, Loader2 } from "lucide-react"
 import Image from "next/image"
 import type { DetectedItem, Occasion } from "@/lib/types"
 
@@ -20,8 +21,6 @@ const OCCASIONS: Occasion[] = [
   "Other",
 ]
 
-type Step = "upload" | "processing" | "details" | "saving"
-
 const PROGRESS_STEPS = [
   { key: "uploading", label: "Uploading photo" },
   { key: "detecting", label: "Identifying clothing" },
@@ -30,45 +29,66 @@ const PROGRESS_STEPS = [
 ] as const
 
 type ProgressKey = (typeof PROGRESS_STEPS)[number]["key"]
+type Step = "idle" | "processing" | "details" | "saving"
 
 interface OutfitLoggerProps {
-  onClose: () => void
+  open: boolean
+  onOpenChange: (open: boolean) => void
 }
 
-export function OutfitLogger({ onClose }: OutfitLoggerProps) {
+export function OutfitLogger({ open, onOpenChange }: OutfitLoggerProps) {
   const router = useRouter()
-  const supabase = createClient()
   const fileRef = useRef<HTMLInputElement>(null)
 
-  const [step, setStep] = useState<Step>("upload")
+  const [step, setStep] = useState<Step>("idle")
   const [preview, setPreview] = useState<string | null>(null)
   const [photoUrl, setPhotoUrl] = useState<string | null>(null)
   const [detectedItems, setDetectedItems] = useState<DetectedItem[]>([])
   const [occasion, setOccasion] = useState<string>("")
   const [notes, setNotes] = useState("")
-  const [statusMsg, setStatusMsg] = useState("")
   const [progressKey, setProgressKey] = useState<ProgressKey | null>(null)
 
-  function setProgress(key: ProgressKey, msg: string) {
+  function setProgress(key: ProgressKey) {
     setProgressKey(key)
-    setStatusMsg(msg)
+  }
+
+  function reset() {
+    setStep("idle")
+    setPreview(null)
+    setPhotoUrl(null)
+    setDetectedItems([])
+    setOccasion("")
+    setNotes("")
+    setProgressKey(null)
+  }
+
+  function handleClose() {
+    reset()
+    onOpenChange(false)
+  }
+
+  function clearPhoto() {
+    setPreview(null)
+    setPhotoUrl(null)
+    setDetectedItems([])
+    setStep("idle")
   }
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
+    // Reset file input so same file can be reselected
+    e.target.value = ""
 
-    // Show preview immediately
     const objectUrl = URL.createObjectURL(file)
     setPreview(objectUrl)
     setStep("processing")
-    setProgress("uploading", "Uploading photo…")
+    setProgress("uploading")
 
-    // Get user ID for storage path
+    const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    // Upload original photo
     const ext = file.name.split(".").pop() ?? "jpg"
     const tempId = crypto.randomUUID()
     const storagePath = `${user.id}/${tempId}/original.${ext}`
@@ -78,20 +98,14 @@ export function OutfitLogger({ onClose }: OutfitLoggerProps) {
       .upload(storagePath, file, { contentType: file.type })
 
     if (uploadError) {
-      setStep("upload")
+      clearPhoto()
       return
     }
 
-    const { data: { publicUrl } } = supabase.storage
-      .from("outfit-photos")
-      .getPublicUrl(storagePath)
-
-    // Use the storage path to build a reference URL for the API
     const storageUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/outfit-photos/${storagePath}`
     setPhotoUrl(storageUrl)
 
-    // AI detection
-    setProgress("detecting", "Identifying clothing items…")
+    setProgress("detecting")
     const detectRes = await fetch("/api/ai/detect", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -99,20 +113,17 @@ export function OutfitLogger({ onClose }: OutfitLoggerProps) {
     })
     const { items } = await detectRes.json()
     setDetectedItems(items ?? [])
-
     setStep("details")
   }
 
   async function handleSubmit() {
     if (!photoUrl) return
     setStep("saving")
-    setProgress("generating", "Generating your flat-lay…")
+    setProgress("generating")
 
-    // Create outfit ID upfront so flatlay can use it for storage path
     const outfitId = crypto.randomUUID()
-
-    // Generate flatlay
     let flatlayUrl: string | null = null
+
     if (detectedItems.length > 0) {
       const flatlayRes = await fetch("/api/ai/flatlay", {
         method: "POST",
@@ -123,9 +134,8 @@ export function OutfitLogger({ onClose }: OutfitLoggerProps) {
       flatlayUrl = data.flatlay_url ?? null
     }
 
-    setProgress("saving", "Saving to your journal…")
+    setProgress("saving")
 
-    // Save outfit to DB
     await fetch("/api/outfits", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -138,142 +148,116 @@ export function OutfitLogger({ onClose }: OutfitLoggerProps) {
       }),
     })
 
-    onClose()
+    handleClose()
     router.refresh()
     router.push("/today")
   }
 
+  const isBusy = step === "processing" || step === "saving"
+
   return (
-    <div className="fixed inset-0 z-50 bg-[oklch(0.12_0.01_255)] flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between px-5 pt-12 pb-4">
-        <button
-          onClick={onClose}
-          className="text-[oklch(0.52_0.012_255)] hover:text-[oklch(0.72_0.006_255)] transition-colors"
-        >
-          <X size={22} />
-        </button>
-        <h2 className="text-sm tracking-[0.15em] uppercase text-[oklch(0.72_0.006_255)]">
-          {step === "upload" && "Log Outfit"}
-          {step === "processing" && "Analyzing"}
-          {step === "details" && "Add Details"}
-          {step === "saving" && "Saving"}
-        </h2>
-        <div className="w-6" />
-      </div>
+    <Sheet open={open} onOpenChange={(v) => { if (!v) handleClose() }}>
+      <SheetContent
+        side="bottom"
+        className="bg-[oklch(0.14_0.01_255)] border-t border-[oklch(0.25_0.008_255)] rounded-t-2xl px-5 pb-10 max-h-[92vh] overflow-y-auto"
+      >
+        {/* Drag handle */}
+        <div className="flex justify-center pt-3 pb-4">
+          <div className="w-10 h-1 rounded-full bg-[oklch(0.35_0.008_255)]" />
+        </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto px-5 pb-8">
-        {step === "upload" && (
-          <div className="flex flex-col items-center justify-center h-full gap-6">
+        <SheetHeader className="mb-5">
+          <div className="flex items-center justify-between">
+            <SheetTitle className="text-base font-normal tracking-wide text-[oklch(0.92_0.003_247)]">
+              Log outfit
+            </SheetTitle>
             <button
-              onClick={() => fileRef.current?.click()}
-              className="w-40 h-40 rounded-full border-2 border-dashed border-[oklch(0.35_0.008_255)] flex flex-col items-center justify-center gap-3 text-[oklch(0.52_0.012_255)] hover:border-[oklch(0.52_0.012_255)] hover:text-[oklch(0.72_0.006_255)] transition-colors"
+              onClick={handleClose}
+              className="text-[oklch(0.52_0.012_255)] hover:text-[oklch(0.72_0.006_255)] transition-colors"
             >
-              <Camera size={32} />
-              <span className="text-xs tracking-widest uppercase">
-                Add Photo
-              </span>
+              <X size={20} />
             </button>
-            <p className="text-xs text-[oklch(0.4_0.008_255)] text-center max-w-xs">
-              Take a photo or upload from your library. AI will identify your clothing pieces.
-            </p>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleFileChange}
-            />
+          </div>
+        </SheetHeader>
+
+        {/* Photo area */}
+        {!preview ? (
+          <button
+            onClick={() => fileRef.current?.click()}
+            className="w-full aspect-video rounded-xl border-2 border-dashed border-[oklch(0.3_0.008_255)] flex flex-col items-center justify-center gap-3 text-[oklch(0.45_0.008_255)] hover:border-[oklch(0.52_0.012_255)] hover:text-[oklch(0.65_0.008_255)] transition-colors mb-5"
+          >
+            <ImagePlus size={28} />
+            <span className="text-xs tracking-widest uppercase">Add Photo</span>
+          </button>
+        ) : (
+          <div className="relative w-full aspect-video rounded-xl overflow-hidden mb-5">
+            <Image src={preview} alt="Outfit" fill className="object-cover" />
+            {!isBusy && (
+              <button
+                onClick={clearPhoto}
+                className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 flex items-center justify-center"
+              >
+                <X size={14} className="text-white" />
+              </button>
+            )}
           </div>
         )}
 
-        {(step === "processing" || step === "saving") && (
-          <div className="flex flex-col items-center justify-center h-full gap-8">
-            {preview && (
-              <div className="relative w-56 h-56 rounded-sm overflow-hidden">
-                <Image
-                  src={preview}
-                  alt="Outfit"
-                  fill
-                  className="object-cover opacity-30"
-                />
-              </div>
-            )}
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleFileChange}
+        />
 
-            {/* Step tracker */}
-            <div className="w-full max-w-xs space-y-3">
-              {PROGRESS_STEPS.map(({ key, label }, idx) => {
-                const currentIdx = PROGRESS_STEPS.findIndex(s => s.key === progressKey)
-                const isDone = idx < currentIdx
-                const isActive = key === progressKey
-                const isPending = idx > currentIdx
+        {/* Processing steps */}
+        {isBusy && (
+          <div className="space-y-3 mb-6">
+            {PROGRESS_STEPS.map(({ key, label }, idx) => {
+              const currentIdx = PROGRESS_STEPS.findIndex(s => s.key === progressKey)
+              const isDone = idx < currentIdx
+              const isActive = key === progressKey
 
-                return (
-                  <div key={key} className="flex items-center gap-3">
-                    <div className="w-5 h-5 flex items-center justify-center shrink-0">
-                      {isDone && (
-                        <div className="w-2 h-2 rounded-full bg-[oklch(0.72_0.006_255)]" />
-                      )}
-                      {isActive && (
-                        <Loader2 size={14} className="animate-spin text-[oklch(0.93_0.003_247)]" />
-                      )}
-                      {isPending && (
-                        <div className="w-2 h-2 rounded-full bg-[oklch(0.28_0.008_255)]" />
-                      )}
-                    </div>
-                    <p className={`text-sm transition-colors ${
-                      isActive
-                        ? "text-[oklch(0.93_0.003_247)]"
-                        : isDone
-                        ? "text-[oklch(0.52_0.012_255)]"
-                        : "text-[oklch(0.35_0.008_255)]"
-                    }`}>
-                      {label}
-                    </p>
+              return (
+                <div key={key} className="flex items-center gap-3">
+                  <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                    {isDone && <div className="w-2 h-2 rounded-full bg-[oklch(0.65_0.008_255)]" />}
+                    {isActive && <Loader2 size={14} className="animate-spin text-[oklch(0.93_0.003_247)]" />}
+                    {!isDone && !isActive && <div className="w-2 h-2 rounded-full bg-[oklch(0.28_0.008_255)]" />}
                   </div>
-                )
-              })}
-            </div>
-
-            <p className="text-[10px] tracking-[0.15em] uppercase text-[oklch(0.35_0.008_255)]">
-              This takes about 30–45 seconds
+                  <p className={`text-sm ${
+                    isActive ? "text-[oklch(0.93_0.003_247)]"
+                    : isDone ? "text-[oklch(0.52_0.012_255)]"
+                    : "text-[oklch(0.35_0.008_255)]"
+                  }`}>
+                    {label}
+                  </p>
+                </div>
+              )
+            })}
+            <p className="text-[10px] tracking-widest uppercase text-[oklch(0.35_0.008_255)] pt-1">
+              Takes about 30–45 seconds
             </p>
           </div>
         )}
 
+        {/* Details form — shown after detection */}
         {step === "details" && (
-          <div className="space-y-6 pt-2">
-            {/* Photo preview */}
-            {preview && (
-              <div className="relative aspect-square w-full rounded-sm overflow-hidden">
-                <Image
-                  src={preview}
-                  alt="Outfit"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            )}
-
-            {/* Detected items */}
+          <div className="space-y-5">
+            {/* Detected items summary */}
             {detectedItems.length > 0 && (
               <div className="space-y-2">
-                <p className="text-[10px] tracking-[0.2em] uppercase text-[oklch(0.4_0.008_255)]">
-                  Detected Items
+                <p className="text-[10px] tracking-[0.2em] uppercase text-[oklch(0.45_0.008_255)]">
+                  Detected — {detectedItems.length} items
                 </p>
-                <div className="space-y-1">
+                <div className="divide-y divide-[oklch(0.22_0.008_255)]">
                   {detectedItems.map((item, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center gap-3 py-2 border-b border-[oklch(0.22_0.008_255)]"
-                    >
-                      <span className="text-[10px] tracking-widest uppercase text-[oklch(0.4_0.008_255)] w-20 shrink-0">
+                    <div key={i} className="flex items-center gap-3 py-2">
+                      <span className="text-[10px] tracking-widest uppercase text-[oklch(0.42_0.008_255)] w-20 shrink-0">
                         {item.category}
                       </span>
-                      <span className="text-sm text-[oklch(0.82_0.004_247)]">
-                        {item.name}
-                      </span>
+                      <span className="text-sm text-[oklch(0.80_0.004_247)]">{item.name}</span>
                     </div>
                   ))}
                 </div>
@@ -282,19 +266,19 @@ export function OutfitLogger({ onClose }: OutfitLoggerProps) {
 
             {/* Occasion */}
             <div className="space-y-2">
-              <label className="text-[10px] tracking-[0.2em] uppercase text-[oklch(0.4_0.008_255)]">
+              <label className="text-[10px] tracking-[0.2em] uppercase text-[oklch(0.45_0.008_255)]">
                 Occasion
               </label>
               <Select value={occasion} onValueChange={(v) => setOccasion(v ?? "")}>
-                <SelectTrigger className="bg-[oklch(0.18_0.01_255)] border-[oklch(0.28_0.008_255)] text-[oklch(0.72_0.006_255)] h-11 rounded-sm">
+                <SelectTrigger className="bg-[oklch(0.20_0.01_255)] border-[oklch(0.28_0.008_255)] text-[oklch(0.72_0.006_255)] h-11 rounded-lg">
                   <SelectValue placeholder="Select occasion" />
                 </SelectTrigger>
-                <SelectContent className="bg-[oklch(0.18_0.01_255)] border-[oklch(0.28_0.008_255)]">
+                <SelectContent className="bg-[oklch(0.20_0.01_255)] border-[oklch(0.28_0.008_255)]">
                   {OCCASIONS.map((o) => (
                     <SelectItem
                       key={o}
                       value={o}
-                      className="text-[oklch(0.72_0.006_255)] focus:bg-[oklch(0.24_0.01_255)] focus:text-[oklch(0.92_0.003_247)]"
+                      className="text-[oklch(0.72_0.006_255)] focus:bg-[oklch(0.28_0.01_255)] focus:text-[oklch(0.92_0.003_247)]"
                     >
                       {o}
                     </SelectItem>
@@ -305,26 +289,26 @@ export function OutfitLogger({ onClose }: OutfitLoggerProps) {
 
             {/* Notes */}
             <div className="space-y-2">
-              <label className="text-[10px] tracking-[0.2em] uppercase text-[oklch(0.4_0.008_255)]">
+              <label className="text-[10px] tracking-[0.2em] uppercase text-[oklch(0.45_0.008_255)]">
                 Notes
               </label>
               <Textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                placeholder="How did this outfit feel? Where were you going?"
-                className="bg-[oklch(0.18_0.01_255)] border-[oklch(0.28_0.008_255)] text-[oklch(0.72_0.006_255)] placeholder:text-[oklch(0.35_0.008_255)] rounded-sm resize-none min-h-24"
+                placeholder="Where were you going?"
+                className="bg-[oklch(0.20_0.01_255)] border-[oklch(0.28_0.008_255)] text-[oklch(0.72_0.006_255)] placeholder:text-[oklch(0.38_0.008_255)] rounded-lg resize-none min-h-20"
               />
             </div>
 
             <Button
               onClick={handleSubmit}
-              className="w-full h-12 bg-[oklch(0.93_0.003_247)] text-[oklch(0.14_0.01_255)] hover:bg-white font-medium tracking-wide rounded-sm"
+              className="w-full h-12 bg-[oklch(0.93_0.003_247)] text-[oklch(0.14_0.01_255)] hover:bg-white font-medium tracking-wide rounded-lg"
             >
               Save Outfit
             </Button>
           </div>
         )}
-      </div>
-    </div>
+      </SheetContent>
+    </Sheet>
   )
 }
