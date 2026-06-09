@@ -138,9 +138,9 @@ export function OutfitLogger({ open, onOpenChange }: OutfitLoggerProps) {
   async function handleSubmit() {
     if (!photoUrl) return
     setStep("saving")
-    setProgress("saving")
+    // Show "generating" step as active — server generates flatlay synchronously
+    setProgress("generating")
 
-    // Save outfit — server handles flatlay generation in background via after()
     await fetch("/api/outfits", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -153,6 +153,7 @@ export function OutfitLogger({ open, onOpenChange }: OutfitLoggerProps) {
       }),
     })
 
+    setProgress("saving")
     handleClose()
     router.refresh()
     router.push("/today")
@@ -242,7 +243,7 @@ export function OutfitLogger({ open, onOpenChange }: OutfitLoggerProps) {
               )
             })}
             <p className="text-[10px] tracking-widest uppercase text-[oklch(0.35_0.008_255)] pt-1">
-              Takes about 30–45 seconds
+              Takes about 20–30 seconds
             </p>
           </div>
         )}

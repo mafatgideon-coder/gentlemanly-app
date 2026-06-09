@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
 import { createClient as createServiceClient } from "@supabase/supabase-js"
-import { after } from "next/server"
 import { generateFlatlay } from "@/lib/openai/flatlay"
 import { NextResponse } from "next/server"
 import type { DetectedItem } from "@/lib/types"
@@ -98,44 +97,42 @@ export async function POST(request: Request) {
     )
   }
 
-  // Generate flatlay AFTER response is sent — runs on the server, never blocks the client
+  // Generate flatlay synchronously — client waits for this to complete
+  let flatlayUrl: string | null = null
   if (items.length > 0) {
-    const outfitId = outfit.id
-    const userId = user.id
+    try {
+      const service = createServiceClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      )
 
-    after(async () => {
-      try {
-        const service = createServiceClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.SUPABASE_SERVICE_ROLE_KEY!
-        )
+      const dalleUrl = await generateFlatlay(items)
+      const imageRes = await fetch(dalleUrl)
+      const imageBuffer = Buffer.from(await imageRes.arrayBuffer())
 
-        const dalleUrl = await generateFlatlay(items)
-        const imageRes = await fetch(dalleUrl)
-        const imageBuffer = Buffer.from(await imageRes.arrayBuffer())
+      const storagePath = `${user.id}/${outfit.id}/flatlay.png`
+      await service.storage
+        .from("flatlay-images")
+        .upload(storagePath, imageBuffer, { contentType: "image/png", upsert: true })
 
-        const storagePath = `${userId}/${outfitId}/flatlay.png`
-        await service.storage
-          .from("flatlay-images")
-          .upload(storagePath, imageBuffer, { contentType: "image/png", upsert: true })
+      const { data: signed } = await service.storage
+        .from("flatlay-images")
+        .createSignedUrl(storagePath, 60 * 60 * 24 * 365)
 
-        const { data: signed } = await service.storage
-          .from("flatlay-images")
-          .createSignedUrl(storagePath, 60 * 60 * 24 * 365)
+      flatlayUrl = signed?.signedUrl ?? null
 
-        if (signed?.signedUrl) {
-          await service.from("outfits").update({ flatlay_url: signed.signedUrl }).eq("id", outfitId)
-        }
-
-        // Delete original photo
-        if (photo_storage_path) {
-          await service.storage.from("outfit-photos").remove([photo_storage_path])
-        }
-      } catch (err) {
-        console.error("[flatlay background]", err)
+      if (flatlayUrl) {
+        await service.from("outfits").update({ flatlay_url: flatlayUrl }).eq("id", outfit.id)
       }
-    })
+
+      if (photo_storage_path) {
+        await service.storage.from("outfit-photos").remove([photo_storage_path])
+      }
+    } catch (err) {
+      console.error("[flatlay]", err)
+      // Outfit saved even if flatlay fails
+    }
   }
 
-  return NextResponse.json({ outfit })
+  return NextResponse.json({ outfit: { ...outfit, flatlay_url: flatlayUrl } })
 }
