@@ -98,7 +98,17 @@ export async function POST(request: Request) {
     const service = serviceClient()
     console.log("[flatlay] generating for outfit", outfit.id, "| items:", items.length)
 
-    const imageBuffer = await generateFlatlay(items)
+    // Download the original photo to use as visual reference
+    let photoBuffer: Buffer | undefined
+    try {
+      const photoRes = await fetch(photo_url)
+      photoBuffer = Buffer.from(await photoRes.arrayBuffer())
+      console.log("[flatlay] photo downloaded for reference, bytes:", photoBuffer.byteLength)
+    } catch {
+      console.log("[flatlay] could not download photo, falling back to text-only")
+    }
+
+    const imageBuffer = await generateFlatlay(items, photoBuffer)
     console.log("[flatlay] image generated, bytes:", imageBuffer.byteLength)
 
     const storagePath = `${user.id}/${outfit.id}/flatlay.png`
