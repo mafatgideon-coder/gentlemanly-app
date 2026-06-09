@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server"
 import { createClient as createServiceClient } from "@supabase/supabase-js"
 import { generateFlatlay } from "@/lib/openai/flatlay"
 import { cropAndStoreWardrobeImages } from "@/lib/openai/cropWardrobeItems"
-import { NextResponse } from "next/server"
+import { NextResponse, after } from "next/server"
 import type { DetectedItem } from "@/lib/types"
 
 function serviceClient() {
@@ -141,15 +141,19 @@ export async function POST(request: Request) {
         console.log("[flatlay] outfit updated with flatlay_url")
       }
 
-      // Crop individual items from flat-lay for any item missing an image
-      if (itemsNeedingImages.length > 0) {
-        console.log("[wardrobe-img] generating", itemsNeedingImages.length, "item images")
-        await cropAndStoreWardrobeImages(itemsNeedingImages, photoBuffer, user.id, service)
-      }
-    }
-
-    if (photo_storage_path) {
-      await service.storage.from("outfit-photos").remove([photo_storage_path])
+      // Generate wardrobe item images + clean up original photo in the background
+      // after() runs after the response is sent, so it doesn't block the client
+      const capturedPhotoBuffer = photoBuffer
+      const capturedPhotoStoragePath = photo_storage_path
+      after(async () => {
+        if (itemsNeedingImages.length > 0) {
+          console.log("[wardrobe-img] generating", itemsNeedingImages.length, "item images (background)")
+          await cropAndStoreWardrobeImages(itemsNeedingImages, capturedPhotoBuffer, user.id, service)
+        }
+        if (capturedPhotoStoragePath) {
+          await service.storage.from("outfit-photos").remove([capturedPhotoStoragePath])
+        }
+      })
     }
   } catch (err) {
     console.error("[flatlay] error:", err instanceof Error ? err.message : err)
