@@ -22,6 +22,15 @@ const OCCASIONS: Occasion[] = [
 
 type Step = "upload" | "processing" | "details" | "saving"
 
+const PROGRESS_STEPS = [
+  { key: "uploading", label: "Uploading photo" },
+  { key: "detecting", label: "Identifying clothing" },
+  { key: "generating", label: "Generating flat-lay" },
+  { key: "saving", label: "Saving to journal" },
+] as const
+
+type ProgressKey = (typeof PROGRESS_STEPS)[number]["key"]
+
 interface OutfitLoggerProps {
   onClose: () => void
 }
@@ -38,6 +47,12 @@ export function OutfitLogger({ onClose }: OutfitLoggerProps) {
   const [occasion, setOccasion] = useState<string>("")
   const [notes, setNotes] = useState("")
   const [statusMsg, setStatusMsg] = useState("")
+  const [progressKey, setProgressKey] = useState<ProgressKey | null>(null)
+
+  function setProgress(key: ProgressKey, msg: string) {
+    setProgressKey(key)
+    setStatusMsg(msg)
+  }
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -47,7 +62,7 @@ export function OutfitLogger({ onClose }: OutfitLoggerProps) {
     const objectUrl = URL.createObjectURL(file)
     setPreview(objectUrl)
     setStep("processing")
-    setStatusMsg("Uploading photo…")
+    setProgress("uploading", "Uploading photo…")
 
     // Get user ID for storage path
     const { data: { user } } = await supabase.auth.getUser()
@@ -76,7 +91,7 @@ export function OutfitLogger({ onClose }: OutfitLoggerProps) {
     setPhotoUrl(storageUrl)
 
     // AI detection
-    setStatusMsg("Analyzing your outfit…")
+    setProgress("detecting", "Identifying clothing items…")
     const detectRes = await fetch("/api/ai/detect", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -91,7 +106,7 @@ export function OutfitLogger({ onClose }: OutfitLoggerProps) {
   async function handleSubmit() {
     if (!photoUrl) return
     setStep("saving")
-    setStatusMsg("Generating your flat-lay…")
+    setProgress("generating", "Generating your flat-lay…")
 
     // Create outfit ID upfront so flatlay can use it for storage path
     const outfitId = crypto.randomUUID()
@@ -108,7 +123,7 @@ export function OutfitLogger({ onClose }: OutfitLoggerProps) {
       flatlayUrl = data.flatlay_url ?? null
     }
 
-    setStatusMsg("Saving to your journal…")
+    setProgress("saving", "Saving to your journal…")
 
     // Save outfit to DB
     await fetch("/api/outfits", {
@@ -174,21 +189,56 @@ export function OutfitLogger({ onClose }: OutfitLoggerProps) {
         )}
 
         {(step === "processing" || step === "saving") && (
-          <div className="flex flex-col items-center justify-center h-full gap-6">
+          <div className="flex flex-col items-center justify-center h-full gap-8">
             {preview && (
-              <div className="relative w-64 h-64 rounded-sm overflow-hidden">
+              <div className="relative w-56 h-56 rounded-sm overflow-hidden">
                 <Image
                   src={preview}
                   alt="Outfit"
                   fill
-                  className="object-cover opacity-40"
+                  className="object-cover opacity-30"
                 />
               </div>
             )}
-            <div className="flex flex-col items-center gap-3">
-              <Loader2 size={24} className="animate-spin text-[oklch(0.72_0.006_255)]" />
-              <p className="text-sm text-[oklch(0.52_0.012_255)]">{statusMsg}</p>
+
+            {/* Step tracker */}
+            <div className="w-full max-w-xs space-y-3">
+              {PROGRESS_STEPS.map(({ key, label }, idx) => {
+                const currentIdx = PROGRESS_STEPS.findIndex(s => s.key === progressKey)
+                const isDone = idx < currentIdx
+                const isActive = key === progressKey
+                const isPending = idx > currentIdx
+
+                return (
+                  <div key={key} className="flex items-center gap-3">
+                    <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                      {isDone && (
+                        <div className="w-2 h-2 rounded-full bg-[oklch(0.72_0.006_255)]" />
+                      )}
+                      {isActive && (
+                        <Loader2 size={14} className="animate-spin text-[oklch(0.93_0.003_247)]" />
+                      )}
+                      {isPending && (
+                        <div className="w-2 h-2 rounded-full bg-[oklch(0.28_0.008_255)]" />
+                      )}
+                    </div>
+                    <p className={`text-sm transition-colors ${
+                      isActive
+                        ? "text-[oklch(0.93_0.003_247)]"
+                        : isDone
+                        ? "text-[oklch(0.52_0.012_255)]"
+                        : "text-[oklch(0.35_0.008_255)]"
+                    }`}>
+                      {label}
+                    </p>
+                  </div>
+                )
+              })}
             </div>
+
+            <p className="text-[10px] tracking-[0.15em] uppercase text-[oklch(0.35_0.008_255)]">
+              This takes about 30–45 seconds
+            </p>
           </div>
         )}
 
