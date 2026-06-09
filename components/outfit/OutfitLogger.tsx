@@ -125,38 +125,35 @@ export function OutfitLogger({ open, onOpenChange }: OutfitLoggerProps) {
   async function handleSubmit() {
     if (!photoUrl) return
     setStep("saving")
-    setProgress("generating")
-
-    const outfitId = crypto.randomUUID()
-    let flatlayUrl: string | null = null
-
-    if (detectedItems.length > 0) {
-      const flatlayRes = await fetch("/api/ai/flatlay", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items: detectedItems, outfit_id: outfitId }),
-      })
-      const data = await flatlayRes.json()
-      flatlayUrl = data.flatlay_url ?? null
-    }
-
     setProgress("saving")
 
-    await fetch("/api/outfits", {
+    // Save outfit immediately — no waiting for flatlay
+    const res = await fetch("/api/outfits", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         photo_url: photoUrl,
-        flatlay_url: flatlayUrl,
+        flatlay_url: null,
         occasion: occasion || null,
         notes: notes || null,
         items: detectedItems,
       }),
     })
+    const { outfit } = await res.json()
 
+    // Close and navigate right away
     handleClose()
     router.refresh()
     router.push("/today")
+
+    // Fire flatlay generation in background — updates outfit when ready
+    if (detectedItems.length > 0 && outfit?.id) {
+      fetch("/api/ai/flatlay", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items: detectedItems, outfit_id: outfit.id }),
+      }).catch(() => {})
+    }
   }
 
   const isBusy = step === "processing" || step === "saving"

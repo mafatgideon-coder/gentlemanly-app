@@ -42,7 +42,16 @@ export async function POST(request: Request) {
   // Generate a long-lived signed URL for display
   const { data: signed } = await serviceClient.storage
     .from("flatlay-images")
-    .createSignedUrl(storagePath, 60 * 60 * 24 * 365) // 1 year
+    .createSignedUrl(storagePath, 60 * 60 * 24 * 365)
 
-  return NextResponse.json({ flatlay_url: signed?.signedUrl })
+  const flatlayUrl = signed?.signedUrl
+  if (!flatlayUrl) throw new Error("Failed to get signed URL")
+
+  // Update the outfit record with the flatlay URL
+  await serviceClient
+    .from("outfits")
+    .update({ flatlay_url: flatlayUrl })
+    .eq("id", outfit_id)
+
+  return NextResponse.json({ flatlay_url: flatlayUrl })
 }

@@ -17,7 +17,7 @@ export async function generateFlatlay(items: DetectedItem[]): Promise<string> {
     prompt,
     n: 1,
     size: "1024x1024",
-    quality: "hd",
+    quality: "standard",
     style: "natural",
   })
 
