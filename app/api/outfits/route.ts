@@ -57,7 +57,7 @@ export async function POST(request: Request) {
 
   // Upsert wardrobe items — crop images for new items OR existing items missing an image
   const wardrobeIds: string[] = []
-  const itemsNeedingImages: Array<{ id: string; name: string; category: string }> = []
+  const itemsNeedingImages: Array<{ id: string; name: string; category: string; description?: string; color?: string }> = []
 
   for (const item of items) {
     const { data: existing } = await supabase
@@ -75,7 +75,7 @@ export async function POST(request: Request) {
         .eq("id", existing.id)
       wardrobeIds.push(existing.id)
       if (!existing.image_url) {
-        itemsNeedingImages.push({ id: existing.id, name: item.name, category: item.category })
+        itemsNeedingImages.push({ id: existing.id, name: item.name, category: item.category, description: item.description, color: item.color })
       }
     } else {
       const { data: newItem } = await supabase
@@ -92,7 +92,7 @@ export async function POST(request: Request) {
         .single()
       if (newItem) {
         wardrobeIds.push(newItem.id)
-        itemsNeedingImages.push({ id: newItem.id, name: item.name, category: item.category })
+        itemsNeedingImages.push({ id: newItem.id, name: item.name, category: item.category, description: item.description, color: item.color })
       }
     }
   }
