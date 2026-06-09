@@ -181,3 +181,32 @@ CREATE POLICY "Service role can update flatlay images"
   ON storage.objects FOR UPDATE
   TO service_role
   USING (bucket_id = 'flatlay-images');
+
+
+-- ── Wardrobe item images ──────────────────────────────────────
+ALTER TABLE wardrobe_items ADD COLUMN IF NOT EXISTS image_url TEXT;
+
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('wardrobe-images', 'wardrobe-images', false)
+ON CONFLICT DO NOTHING;
+
+DROP POLICY IF EXISTS "Users can read own wardrobe images" ON storage.objects;
+CREATE POLICY "Users can read own wardrobe images"
+  ON storage.objects FOR SELECT
+  TO authenticated
+  USING (
+    bucket_id = 'wardrobe-images'
+    AND (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+DROP POLICY IF EXISTS "Service role can write wardrobe images" ON storage.objects;
+CREATE POLICY "Service role can write wardrobe images"
+  ON storage.objects FOR INSERT
+  TO service_role
+  WITH CHECK (bucket_id = 'wardrobe-images');
+
+DROP POLICY IF EXISTS "Service role can update wardrobe images" ON storage.objects;
+CREATE POLICY "Service role can update wardrobe images"
+  ON storage.objects FOR UPDATE
+  TO service_role
+  USING (bucket_id = 'wardrobe-images');

@@ -21,6 +21,7 @@ export interface WardrobeItem {
   subcategory: string
   color: string
   description: string
+  image_url: string | null
   wear_count: number
   last_worn: string
   created_at: string

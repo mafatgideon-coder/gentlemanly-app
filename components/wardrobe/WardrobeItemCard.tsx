@@ -1,3 +1,4 @@
+import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
 import { formatShortDate } from "@/lib/utils"
 import type { WardrobeItem } from "@/lib/types"
@@ -13,11 +14,18 @@ const CATEGORY_COLORS: Record<string, string> = {
 export function WardrobeItemCard({ item }: { item: WardrobeItem }) {
   return (
     <div className="space-y-2">
-      {/* Swatch placeholder */}
-      <div className="aspect-square bg-[oklch(0.93_0.003_247)] rounded-sm flex items-end p-2">
+      <div className="relative aspect-square bg-[oklch(0.93_0.003_247)] rounded-sm overflow-hidden flex items-end p-2">
+        {item.image_url && (
+          <Image
+            src={item.image_url}
+            alt={item.name}
+            fill
+            className="object-cover"
+          />
+        )}
         <Badge
           variant="secondary"
-          className={`text-[9px] tracking-wider uppercase border-0 ${CATEGORY_COLORS[item.category] ?? CATEGORY_COLORS.tops}`}
+          className={`relative z-10 text-[9px] tracking-wider uppercase border-0 ${CATEGORY_COLORS[item.category] ?? CATEGORY_COLORS.tops}`}
         >
           {item.category}
         </Badge>
@@ -25,9 +33,7 @@ export function WardrobeItemCard({ item }: { item: WardrobeItem }) {
       <div>
         <p className="text-sm text-[oklch(0.22_0.008_255)] leading-snug">{item.name}</p>
         <div className="flex items-center gap-2 mt-0.5">
-          <p className="text-[10px] text-[oklch(0.6_0.006_255)]">
-            {item.wear_count}× worn
-          </p>
+          <p className="text-[10px] text-[oklch(0.6_0.006_255)]">{item.wear_count}× worn</p>
           {item.last_worn && (
             <>
               <span className="text-[oklch(0.75_0.004_255)]">·</span>

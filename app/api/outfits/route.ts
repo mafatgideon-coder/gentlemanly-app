@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { createClient as createServiceClient } from "@supabase/supabase-js"
 import { generateFlatlay } from "@/lib/openai/flatlay"
+import { cropAndStoreWardrobeImages } from "@/lib/openai/cropWardrobeItems"
 import { NextResponse } from "next/server"
 import type { DetectedItem } from "@/lib/types"
 
@@ -54,7 +55,10 @@ export async function POST(request: Request) {
 
   if (outfitError) return NextResponse.json({ error: outfitError.message }, { status: 500 })
 
+  // Upsert wardrobe items — track which are brand new (need images)
   const wardrobeIds: string[] = []
+  const newWardrobeItems: Array<{ id: string; name: string; category: string }> = []
+
   for (const item of items) {
     const { data: existing } = await supabase
       .from("wardrobe_items")
@@ -83,7 +87,10 @@ export async function POST(request: Request) {
         })
         .select("id")
         .single()
-      if (newItem) wardrobeIds.push(newItem.id)
+      if (newItem) {
+        wardrobeIds.push(newItem.id)
+        newWardrobeItems.push({ id: newItem.id, name: item.name, category: item.category })
+      }
     }
   }
 
@@ -108,13 +115,13 @@ export async function POST(request: Request) {
       console.log("[flatlay] could not download photo, falling back to text-only")
     }
 
-    const imageBuffer = await generateFlatlay(items, photoBuffer)
-    console.log("[flatlay] image generated, bytes:", imageBuffer.byteLength)
+    const flatlayBuffer = await generateFlatlay(items, photoBuffer)
+    console.log("[flatlay] image generated, bytes:", flatlayBuffer.byteLength)
 
     const storagePath = `${user.id}/${outfit.id}/flatlay.png`
     const { error: uploadErr } = await service.storage
       .from("flatlay-images")
-      .upload(storagePath, imageBuffer, { contentType: "image/png", upsert: true })
+      .upload(storagePath, flatlayBuffer, { contentType: "image/png", upsert: true })
 
     if (uploadErr) {
       console.error("[flatlay] upload error:", uploadErr.message)
@@ -129,6 +136,12 @@ export async function POST(request: Request) {
       if (flatlayUrl) {
         await service.from("outfits").update({ flatlay_url: flatlayUrl }).eq("id", outfit.id)
         console.log("[flatlay] outfit updated with flatlay_url")
+      }
+
+      // Crop individual items from the flat-lay for new wardrobe items
+      if (newWardrobeItems.length > 0) {
+        console.log("[wardrobe-crop] cropping", newWardrobeItems.length, "new items")
+        await cropAndStoreWardrobeImages(newWardrobeItems, flatlayBuffer, user.id, service)
       }
     }
 
@@ -150,7 +163,6 @@ export async function DELETE(request: Request) {
   const { ids }: { ids: string[] } = await request.json()
   if (!ids?.length) return NextResponse.json({ error: "ids required" }, { status: 400 })
 
-  // Best-effort storage cleanup
   const service = serviceClient()
   const flatlayPaths = ids.map((id) => `${user.id}/${id}/flatlay.png`)
   await service.storage.from("flatlay-images").remove(flatlayPaths)
