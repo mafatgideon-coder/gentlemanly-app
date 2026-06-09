@@ -167,7 +167,6 @@ export function OutfitLogger({ onClose }: OutfitLoggerProps) {
               ref={fileRef}
               type="file"
               accept="image/*"
-              capture="environment"
               className="hidden"
               onChange={handleFileChange}
             />
