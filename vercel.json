@@ -8,6 +8,9 @@
     },
     "app/api/outfits/route.ts": {
       "maxDuration": 120
+    },
+    "app/api/wardrobe/generate-images/route.ts": {
+      "maxDuration": 120
     }
   }
 }
