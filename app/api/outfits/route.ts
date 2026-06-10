@@ -121,7 +121,7 @@ export async function POST(request: Request) {
     const [flatlayBuffer, ...itemBuffers] = await Promise.all([
       generateFlatlay(items, photoBuffer),
       ...itemsNeedingImages.map((item) =>
-        generateItemImage(item, photoBuffer).catch((err) => {
+        generateItemImage(item).catch((err) => {
           console.error("[img] item failed:", item.name, err instanceof Error ? err.message : err)
           return null
         })

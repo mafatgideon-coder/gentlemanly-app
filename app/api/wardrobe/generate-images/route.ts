@@ -48,7 +48,7 @@ export async function POST(request: Request) {
   await Promise.all(
     wardrobeItems.map(async (item) => {
       try {
-        const buffer = await generateItemImage(item, photoBuffer)
+        const buffer = await generateItemImage(item)
 
         const itemPath = `${user.id}/${item.id}/image.png`
         const { error: uploadErr } = await service.storage
