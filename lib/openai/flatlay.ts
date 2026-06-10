@@ -3,6 +3,23 @@ import type { DetectedItem } from "@/lib/types"
 
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
+export async function generateFlatlayFromGrid(gridBuffer: Buffer, items: DetectedItem[]): Promise<Buffer> {
+  const descriptions = items.map((i) => i.description ?? i.name).join(", ")
+  const imageFile = await toFile(gridBuffer, "grid.png", { type: "image/png" })
+
+  const response = await client.images.edit({
+    model: "gpt-image-1",
+    image: imageFile,
+    prompt: `These are individual clothing items shown separately. Recreate them as a single editorial menswear flat-lay photograph. Arrange each piece naturally and artistically on a clean off-white linen background. Items: ${descriptions}. Style of Mr Porter or Matches Fashion product photography. Soft diffused natural lighting from above. No shadows. No human models. No text. No logos. Square composition. Quiet luxury aesthetic.`,
+    n: 1,
+    size: "1024x1024",
+  })
+
+  const b64 = response.data?.[0]?.b64_json
+  if (!b64) throw new Error("gpt-image-1 returned no image for flat-lay")
+  return Buffer.from(b64, "base64")
+}
+
 function buildPrompt(items: DetectedItem[], withPhoto: boolean): string {
   const descriptions = items.length > 0
     ? items.map((i) => i.description).join(", ")
