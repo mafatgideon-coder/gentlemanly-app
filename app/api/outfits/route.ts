@@ -117,17 +117,9 @@ export async function POST(request: Request) {
       console.log("[img] could not download photo, using text-only fallback")
     }
 
-    // Generate flat-lay AND all item images in parallel — ~30s total regardless of item count
-    const [flatlayBuffer, ...itemBuffers] = await Promise.all([
-      generateFlatlay(items, photoBuffer),
-      ...itemsNeedingImages.map((item) =>
-        generateItemImage(item).catch((err) => {
-          console.error("[img] item failed:", item.name, err instanceof Error ? err.message : err)
-          return null
-        })
-      ),
-    ])
-    console.log("[img] all generations done")
+    // Generate flat-lay
+    const flatlayBuffer = await generateFlatlay(items, photoBuffer)
+    console.log("[img] flatlay generated, bytes:", flatlayBuffer.byteLength)
 
     // Upload flat-lay
     const storagePath = `${user.id}/${outfit.id}/flatlay.png`
@@ -149,30 +141,24 @@ export async function POST(request: Request) {
       }
     }
 
-    // Upload wardrobe item images
-    await Promise.all(
-      itemsNeedingImages.map(async (item, i) => {
-        const buffer = itemBuffers[i]
-        if (!buffer) return
-        try {
-          const itemPath = `${user.id}/${item.id}/image.png`
-          const { error: err } = await service.storage
-            .from("wardrobe-images")
-            .upload(itemPath, buffer, { contentType: "image/png", upsert: true })
-          if (!err) {
-            const { data: s } = await service.storage
-              .from("wardrobe-images")
-              .createSignedUrl(itemPath, 60 * 60 * 24 * 365)
-            if (s?.signedUrl) {
-              await service.from("wardrobe_items").update({ image_url: s.signedUrl }).eq("id", item.id)
-              console.log("[img] wardrobe image saved:", item.name)
-            }
+    // TEST: set wardrobe image_url = flatlay URL to verify DB update works
+    // (skipping AI generation to isolate the issue)
+    if (flatlayUrl && itemsNeedingImages.length > 0) {
+      console.log("[img] setting", itemsNeedingImages.length, "wardrobe items to flatlay URL as test")
+      await Promise.all(
+        itemsNeedingImages.map(async (item) => {
+          const { error } = await service
+            .from("wardrobe_items")
+            .update({ image_url: flatlayUrl })
+            .eq("id", item.id)
+          if (error) {
+            console.error("[img] wardrobe update failed:", item.name, error.message)
+          } else {
+            console.log("[img] wardrobe item updated:", item.name)
           }
-        } catch (err) {
-          console.error("[img] wardrobe upload failed:", item.name, err instanceof Error ? err.message : err)
-        }
-      })
-    )
+        })
+      )
+    }
 
     if (photo_storage_path) {
       await service.storage.from("outfit-photos").remove([photo_storage_path])
