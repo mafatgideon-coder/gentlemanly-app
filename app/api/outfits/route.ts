@@ -116,29 +116,32 @@ export async function POST(request: Request) {
       console.log("[img] could not download photo, falling back to text-only")
     }
 
-    // Generate or download an image buffer for every item in the outfit
+    // Generate or download an image buffer for every item — all in parallel
     type ItemBuffer = { id: string; buffer: Buffer; needsStorage: boolean }
-    const itemBuffers: ItemBuffer[] = []
-
-    for (const item of allOutfitItems) {
-      if (item.existingImageUrl) {
-        try {
-          const res = await fetch(item.existingImageUrl)
-          itemBuffers.push({ id: item.id, buffer: Buffer.from(await res.arrayBuffer()), needsStorage: false })
-          console.log("[img] downloaded existing image for:", item.name)
-        } catch {
-          console.log("[img] could not download existing image for:", item.name)
+    const itemBufferResults = await Promise.all(
+      allOutfitItems.map(async (item): Promise<ItemBuffer | null> => {
+        if (item.existingImageUrl) {
+          try {
+            const res = await fetch(item.existingImageUrl)
+            console.log("[img] downloaded existing image for:", item.name)
+            return { id: item.id, buffer: Buffer.from(await res.arrayBuffer()), needsStorage: false }
+          } catch {
+            console.log("[img] could not download existing image for:", item.name)
+            return null
+          }
+        } else {
+          try {
+            const buffer = await generateItemImage(item, photoBuffer)
+            console.log("[img] generated image for:", item.name)
+            return { id: item.id, buffer, needsStorage: true }
+          } catch (err) {
+            console.error("[img] generation failed for", item.name, err instanceof Error ? err.message : err)
+            return null
+          }
         }
-      } else {
-        try {
-          const buffer = await generateItemImage(item, photoBuffer)
-          itemBuffers.push({ id: item.id, buffer, needsStorage: true })
-          console.log("[img] generated image for:", item.name)
-        } catch (err) {
-          console.error("[img] generation failed for", item.name, err instanceof Error ? err.message : err)
-        }
-      }
-    }
+      })
+    )
+    const itemBuffers: ItemBuffer[] = itemBufferResults.filter((r): r is ItemBuffer => r !== null)
 
     if (itemBuffers.length > 0) {
       // Compose item images into a grid for the journal flat-lay
