@@ -1,8 +1,9 @@
 import OpenAI, { toFile } from "openai"
+import type { SupabaseClient } from "@supabase/supabase-js"
 
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
-export interface WardrobeItemInput {
+interface WardrobeItemInput {
   id: string
   name: string
   category: string
@@ -10,7 +11,7 @@ export interface WardrobeItemInput {
   color?: string
 }
 
-export async function generateItemImage(item: WardrobeItemInput, photoBuffer?: Buffer): Promise<Buffer> {
+async function generateItemImage(item: WardrobeItemInput, photoBuffer?: Buffer): Promise<Buffer> {
   const desc = item.description ?? `${item.color ? item.color + " " : ""}${item.name}`
 
   let b64: string | null | undefined
@@ -37,4 +38,43 @@ export async function generateItemImage(item: WardrobeItemInput, photoBuffer?: B
 
   if (!b64) throw new Error(`gpt-image-1 returned no image for: ${item.name}`)
   return Buffer.from(b64, "base64")
+}
+
+export async function cropAndStoreWardrobeImages(
+  items: WardrobeItemInput[],
+  photoBuffer: Buffer | undefined,
+  userId: string,
+  service: SupabaseClient
+): Promise<void> {
+  if (!items.length) return
+
+  for (const item of items) {
+    try {
+      const imageBuffer = await generateItemImage(item, photoBuffer)
+
+      const storagePath = `${userId}/${item.id}/image.png`
+      const { error: uploadErr } = await service.storage
+        .from("wardrobe-images")
+        .upload(storagePath, imageBuffer, { contentType: "image/png", upsert: true })
+
+      if (uploadErr) {
+        console.error("[wardrobe-img] upload error for", item.name, uploadErr.message)
+        continue
+      }
+
+      const { data: signed } = await service.storage
+        .from("wardrobe-images")
+        .createSignedUrl(storagePath, 60 * 60 * 24 * 365)
+
+      if (signed?.signedUrl) {
+        await service
+          .from("wardrobe_items")
+          .update({ image_url: signed.signedUrl })
+          .eq("id", item.id)
+        console.log("[wardrobe-img] stored image for:", item.name)
+      }
+    } catch (err) {
+      console.error("[wardrobe-img] failed for", item.name, err instanceof Error ? err.message : err)
+    }
+  }
 }
