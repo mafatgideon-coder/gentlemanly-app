@@ -140,7 +140,7 @@ export function OutfitLogger({ open, onOpenChange }: OutfitLoggerProps) {
     setStep("saving")
     setProgress("generating")
 
-    const res = await fetch("/api/outfits", {
+    await fetch("/api/outfits", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -151,17 +151,6 @@ export function OutfitLogger({ open, onOpenChange }: OutfitLoggerProps) {
         photo_storage_path: photoStoragePath,
       }),
     })
-
-    const data = await res.json()
-
-    // Fire wardrobe image generation in background — don't await, don't block navigation
-    if (data?.outfit?.id && photoUrl) {
-      fetch("/api/wardrobe/generate-images", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ outfit_id: data.outfit.id, photo_url: photoUrl }),
-      }).catch(() => {})
-    }
 
     setProgress("saving")
     handleClose()

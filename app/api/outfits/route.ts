@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { createClient as createServiceClient } from "@supabase/supabase-js"
 import { generateFlatlay } from "@/lib/openai/flatlay"
+import { generateItemImage } from "@/lib/openai/cropWardrobeItems"
 import { NextResponse } from "next/server"
 import type { DetectedItem } from "@/lib/types"
 
@@ -54,8 +55,9 @@ export async function POST(request: Request) {
 
   if (outfitError) return NextResponse.json({ error: outfitError.message }, { status: 500 })
 
-  // Upsert wardrobe items
+  // Upsert wardrobe items — track which need images
   const wardrobeIds: string[] = []
+  const itemsNeedingImages: Array<{ id: string; name: string; category: string; description?: string; color?: string }> = []
 
   for (const item of items) {
     const { data: existing } = await supabase
@@ -72,6 +74,9 @@ export async function POST(request: Request) {
         .update({ wear_count: existing.wear_count + 1, last_worn: new Date().toISOString() })
         .eq("id", existing.id)
       wardrobeIds.push(existing.id)
+      if (!existing.image_url) {
+        itemsNeedingImages.push({ id: existing.id, name: item.name, category: item.category, description: item.description, color: item.color })
+      }
     } else {
       const { data: newItem } = await supabase
         .from("wardrobe_items")
@@ -85,7 +90,10 @@ export async function POST(request: Request) {
         })
         .select("id")
         .single()
-      if (newItem) wardrobeIds.push(newItem.id)
+      if (newItem) {
+        wardrobeIds.push(newItem.id)
+        itemsNeedingImages.push({ id: newItem.id, name: item.name, category: item.category, description: item.description, color: item.color })
+      }
     }
   }
 
@@ -104,22 +112,31 @@ export async function POST(request: Request) {
     try {
       const photoRes = await fetch(photo_url)
       photoBuffer = Buffer.from(await photoRes.arrayBuffer())
-      console.log("[flatlay] photo downloaded, bytes:", photoBuffer.byteLength)
+      console.log("[img] photo downloaded, bytes:", photoBuffer.byteLength)
     } catch {
-      console.log("[flatlay] could not download photo, using text-only fallback")
+      console.log("[img] could not download photo, using text-only fallback")
     }
 
-    // Generate journal flat-lay (always runs, guaranteed response image)
-    const flatlayBuffer = await generateFlatlay(items, photoBuffer)
-    console.log("[flatlay] generated, bytes:", flatlayBuffer.byteLength)
+    // Generate flat-lay AND all item images in parallel — ~30s total regardless of item count
+    const [flatlayBuffer, ...itemBuffers] = await Promise.all([
+      generateFlatlay(items, photoBuffer),
+      ...itemsNeedingImages.map((item) =>
+        generateItemImage(item, photoBuffer).catch((err) => {
+          console.error("[img] item failed:", item.name, err instanceof Error ? err.message : err)
+          return null
+        })
+      ),
+    ])
+    console.log("[img] all generations done")
 
+    // Upload flat-lay
     const storagePath = `${user.id}/${outfit.id}/flatlay.png`
     const { error: uploadErr } = await service.storage
       .from("flatlay-images")
       .upload(storagePath, flatlayBuffer, { contentType: "image/png", upsert: true })
 
     if (uploadErr) {
-      console.error("[flatlay] upload error:", uploadErr.message)
+      console.error("[img] flatlay upload error:", uploadErr.message)
     } else {
       const { data: signed } = await service.storage
         .from("flatlay-images")
@@ -128,15 +145,40 @@ export async function POST(request: Request) {
       flatlayUrl = signed?.signedUrl ?? null
       if (flatlayUrl) {
         await service.from("outfits").update({ flatlay_url: flatlayUrl }).eq("id", outfit.id)
-        console.log("[flatlay] outfit updated")
-      }
-
-      if (photo_storage_path) {
-        await service.storage.from("outfit-photos").remove([photo_storage_path])
+        console.log("[img] outfit updated with flatlay_url")
       }
     }
+
+    // Upload wardrobe item images
+    await Promise.all(
+      itemsNeedingImages.map(async (item, i) => {
+        const buffer = itemBuffers[i]
+        if (!buffer) return
+        try {
+          const itemPath = `${user.id}/${item.id}/image.png`
+          const { error: err } = await service.storage
+            .from("wardrobe-images")
+            .upload(itemPath, buffer, { contentType: "image/png", upsert: true })
+          if (!err) {
+            const { data: s } = await service.storage
+              .from("wardrobe-images")
+              .createSignedUrl(itemPath, 60 * 60 * 24 * 365)
+            if (s?.signedUrl) {
+              await service.from("wardrobe_items").update({ image_url: s.signedUrl }).eq("id", item.id)
+              console.log("[img] wardrobe image saved:", item.name)
+            }
+          }
+        } catch (err) {
+          console.error("[img] wardrobe upload failed:", item.name, err instanceof Error ? err.message : err)
+        }
+      })
+    )
+
+    if (photo_storage_path) {
+      await service.storage.from("outfit-photos").remove([photo_storage_path])
+    }
   } catch (err) {
-    console.error("[flatlay] error:", err instanceof Error ? err.message : err)
+    console.error("[img] error:", err instanceof Error ? err.message : err)
   }
 
   return NextResponse.json({ outfit: { ...outfit, flatlay_url: flatlayUrl } })
