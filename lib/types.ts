@@ -13,20 +13,6 @@ export interface DetectedItem {
   description: string
 }
 
-export interface WardrobeItem {
-  id: string
-  user_id: string
-  name: string
-  category: Category
-  subcategory: string
-  color: string
-  description: string
-  image_url: string | null
-  wear_count: number
-  last_worn: string
-  created_at: string
-}
-
 export interface Outfit {
   id: string
   user_id: string
@@ -39,9 +25,6 @@ export interface Outfit {
   created_at: string
 }
 
-export interface OutfitWithItems extends Outfit {
-  items: WardrobeItem[]
-}
 
 export type Occasion =
   | "Church"

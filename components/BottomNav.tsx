@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, BookOpen, Shirt, Settings } from "lucide-react"
+import { Home, BookOpen, Settings } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { CameraButton } from "@/components/CameraButton"
 
@@ -12,7 +12,6 @@ const LEFT_TABS = [
 ]
 
 const RIGHT_TABS = [
-  { href: "/wardrobe", label: "Wardrobe", Icon: Shirt },
   { href: "/settings", label: "Settings", Icon: Settings },
 ]
 

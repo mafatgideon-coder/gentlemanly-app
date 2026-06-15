@@ -21,14 +21,5 @@ export async function GET(
     return NextResponse.json({ error: "Not found" }, { status: 404 })
   }
 
-  // Fetch related wardrobe items through junction
-  const { data: outfitItems } = await supabase
-    .from("outfit_items")
-    .select("wardrobe_item_id, wardrobe_items(*)")
-    .eq("outfit_id", id)
-
-  const items =
-    outfitItems?.map((oi: { wardrobe_items: unknown }) => oi.wardrobe_items) ?? []
-
-  return NextResponse.json({ outfit: { ...outfit, items } })
+  return NextResponse.json({ outfit })
 }
