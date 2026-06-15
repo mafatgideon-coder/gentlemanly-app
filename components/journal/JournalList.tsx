@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { groupOutfitsByTime } from "@/lib/utils"
+import { groupOutfitsByDay } from "@/lib/utils"
 import { OutfitCard } from "@/components/outfit/OutfitCard"
 import type { Outfit } from "@/lib/types"
 
@@ -51,7 +51,7 @@ export function JournalList({ outfits: initial }: { outfits: Outfit[] }) {
     )
   }
 
-  const groups = groupOutfitsByTime(outfits)
+  const groups = groupOutfitsByDay(outfits)
 
   return (
     <div>

@@ -4,24 +4,34 @@ import { TodayLogged } from "@/components/today/TodayLogged"
 import { isToday } from "@/lib/utils"
 import type { Outfit } from "@/lib/types"
 
+function startOfISOWeek(): Date {
+  const d = new Date()
+  const day = d.getDay()
+  const diff = day === 0 ? -6 : 1 - day
+  d.setDate(d.getDate() + diff)
+  d.setHours(0, 0, 0, 0)
+  return d
+}
+
 export default async function TodayPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: outfits } = await supabase
+  const weekStart = startOfISOWeek()
+
+  const { data: weekOutfitsRaw } = await supabase
     .from("outfits")
     .select("id, photo_url, flatlay_url, occasion, item_count, logged_at")
     .eq("user_id", user!.id)
+    .gte("logged_at", weekStart.toISOString())
     .order("logged_at", { ascending: false })
-    .limit(5)
 
-  const allOutfits = (outfits ?? []) as Outfit[]
-  const todayOutfit = allOutfits.find((o) => isToday(o.logged_at)) ?? null
-  const mostRecent = allOutfits.find((o) => !isToday(o.logged_at)) ?? null
+  const weekOutfits = (weekOutfitsRaw ?? []) as Outfit[]
+  const todayOutfit = weekOutfits.find((o) => isToday(o.logged_at)) ?? null
 
   if (todayOutfit) {
-    return <TodayLogged outfit={todayOutfit} />
+    return <TodayLogged outfit={todayOutfit} weekOutfits={weekOutfits} />
   }
 
-  return <TodayEmpty recentOutfit={mostRecent} />
+  return <TodayEmpty weekOutfits={weekOutfits} />
 }

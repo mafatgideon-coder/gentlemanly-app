@@ -4,6 +4,10 @@ import Link from "next/link"
 import Image from "next/image"
 import { Check } from "lucide-react"
 import { formatShortDate } from "@/lib/utils"
+
+function dayOfWeek(dateString: string): string {
+  return new Date(dateString).toLocaleDateString("en-US", { weekday: "long" })
+}
 import type { Outfit } from "@/lib/types"
 
 interface OutfitCardProps {
@@ -45,12 +49,14 @@ export function OutfitCard({ outfit, editing, selected, onToggle }: OutfitCardPr
 
       <div className="mt-3 space-y-0.5">
         <div className="flex items-baseline justify-between">
-          <p className="text-sm text-[oklch(0.28_0.008_255)] font-medium">
-            {outfit.occasion ?? "Outfit"}
+          <p className="text-sm text-[oklch(0.72_0.006_255)] font-light">
+            {dayOfWeek(outfit.logged_at)}
           </p>
-          <p className="text-[10px] text-[oklch(0.6_0.006_255)]">{outfit.item_count} items</p>
+          <p className="text-[10px] text-[oklch(0.45_0.008_255)]">{outfit.item_count} items</p>
         </div>
-        <p className="text-xs text-[oklch(0.6_0.006_255)]">{formatShortDate(outfit.logged_at)}</p>
+        <p className="text-xs text-[oklch(0.45_0.008_255)]">
+          {outfit.occasion ? `${outfit.occasion} · ` : ""}{formatShortDate(outfit.logged_at)}
+        </p>
       </div>
     </>
   )

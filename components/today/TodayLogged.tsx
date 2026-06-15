@@ -1,12 +1,14 @@
 import Image from "next/image"
 import { formatTime } from "@/lib/utils"
+import { WeekStrip } from "./WeekStrip"
 import type { Outfit } from "@/lib/types"
 
 interface TodayLoggedProps {
   outfit: Outfit
+  weekOutfits: Outfit[]
 }
 
-export function TodayLogged({ outfit }: TodayLoggedProps) {
+export function TodayLogged({ outfit, weekOutfits }: TodayLoggedProps) {
   return (
     <div className="min-h-[calc(100vh-5rem)] bg-[oklch(0.12_0.01_255)] text-[oklch(0.92_0.003_247)]">
       {/* Date header */}
@@ -21,6 +23,9 @@ export function TodayLogged({ outfit }: TodayLoggedProps) {
           })}
         </h1>
       </div>
+
+      {/* Week strip */}
+      <WeekStrip weekOutfits={weekOutfits} />
 
       {/* Today's flat-lay */}
       <div className="mx-4 rounded-sm overflow-hidden relative">
