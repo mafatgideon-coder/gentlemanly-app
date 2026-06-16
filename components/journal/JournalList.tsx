@@ -102,8 +102,8 @@ export function JournalList({ outfits: initial }: { outfits: Outfit[] }) {
   if (outfits.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] px-8 text-center">
-        <p className="text-[oklch(0.6_0.006_255)] text-sm">Your style archive is empty.</p>
-        <p className="text-[oklch(0.52_0.012_255)] text-xs mt-2">Log your first outfit to begin.</p>
+        <p className="text-[oklch(0.52_0.015_255)] text-sm">Your style archive is empty.</p>
+        <p className="text-[oklch(0.52_0.015_255)] text-xs mt-2">Log your first outfit to begin.</p>
       </div>
     )
   }
@@ -113,11 +113,11 @@ export function JournalList({ outfits: initial }: { outfits: Outfit[] }) {
       {/* Header */}
       <div className="flex items-start justify-between mb-5">
         <div>
-          <p className="text-[10px] tracking-[0.3em] uppercase text-[oklch(0.52_0.012_255)]">Archive</p>
-          <h1 className="text-3xl font-light tracking-tight mt-1 text-[oklch(0.18_0.008_255)]">Journal</h1>
+          <p className="text-[10px] tracking-[0.3em] uppercase text-[oklch(0.52_0.015_255)]">Archive</p>
+          <h1 className="text-3xl font-light tracking-tight mt-1 text-[oklch(0.22_0.07_255)]">Journal</h1>
           <Link
             href="/journal/year"
-            className="text-[10px] tracking-[0.15em] uppercase text-[oklch(0.52_0.012_255)] hover:text-[oklch(0.28_0.008_255)] transition-colors mt-1 inline-block"
+            className="text-[10px] tracking-[0.15em] uppercase text-[oklch(0.52_0.015_255)] hover:text-[oklch(0.15_0.04_255)] transition-colors mt-1 inline-block"
           >
             {new Date().getFullYear()} in review →
           </Link>
@@ -134,13 +134,13 @@ export function JournalList({ outfits: initial }: { outfits: Outfit[] }) {
             </button>
           )}
           {!editing && (
-            <div className="flex items-center bg-[oklch(0.93_0.003_247)] rounded-lg p-0.5 gap-0.5">
+            <div className="flex items-center bg-[oklch(0.90_0.008_70)] rounded-lg p-0.5 gap-0.5">
               <button
                 onClick={() => setView("feed")}
                 className={`px-3 py-1.5 text-[10px] tracking-[0.1em] uppercase rounded-md transition-colors ${
                   view === "feed"
-                    ? "bg-white text-[oklch(0.18_0.008_255)] shadow-sm"
-                    : "text-[oklch(0.55_0.008_255)]"
+                    ? "bg-white text-[oklch(0.22_0.07_255)] shadow-sm"
+                    : "text-[oklch(0.52_0.015_255)]"
                 }`}
               >
                 Feed
@@ -149,8 +149,8 @@ export function JournalList({ outfits: initial }: { outfits: Outfit[] }) {
                 onClick={() => setView("calendar")}
                 className={`px-3 py-1.5 text-[10px] tracking-[0.1em] uppercase rounded-md transition-colors ${
                   view === "calendar"
-                    ? "bg-white text-[oklch(0.18_0.008_255)] shadow-sm"
-                    : "text-[oklch(0.55_0.008_255)]"
+                    ? "bg-white text-[oklch(0.22_0.07_255)] shadow-sm"
+                    : "text-[oklch(0.52_0.015_255)]"
                 }`}
               >
                 Calendar
@@ -159,7 +159,7 @@ export function JournalList({ outfits: initial }: { outfits: Outfit[] }) {
           )}
           <button
             onClick={() => (editing ? exitEdit() : setEditing(true))}
-            className="text-xs text-[oklch(0.45_0.012_255)] font-medium tracking-wide"
+            className="text-xs text-[oklch(0.42_0.015_255)] font-medium tracking-wide"
           >
             {editing ? "Done" : "Select"}
           </button>
@@ -171,19 +171,19 @@ export function JournalList({ outfits: initial }: { outfits: Outfit[] }) {
         <div className="relative mb-3">
           <Search
             size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-[oklch(0.55_0.008_255)]"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-[oklch(0.52_0.015_255)]"
           />
           <input
             type="text"
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search by item or occasion…"
-            className="w-full h-10 bg-[oklch(0.93_0.003_247)] rounded-lg pl-9 pr-9 text-sm text-[oklch(0.28_0.008_255)] placeholder:text-[oklch(0.62_0.006_255)] outline-none focus:ring-1 focus:ring-[oklch(0.72_0.006_255)] transition-all"
+            className="w-full h-10 bg-[oklch(0.90_0.008_70)] rounded-lg pl-9 pr-9 text-sm text-[oklch(0.15_0.04_255)] placeholder:text-[oklch(0.62_0.006_255)] outline-none focus:ring-1 focus:ring-[oklch(0.90_0.008_70)] transition-all"
           />
           {search && (
             <button
               onClick={() => setSearch("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[oklch(0.55_0.008_255)]"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[oklch(0.52_0.015_255)]"
             >
               <X size={14} />
             </button>
@@ -198,8 +198,8 @@ export function JournalList({ outfits: initial }: { outfits: Outfit[] }) {
             onClick={() => setFavoritesOnly(f => !f)}
             className={`flex items-center gap-1.5 shrink-0 h-8 px-3 rounded-full text-xs transition-colors ${
               favoritesOnly
-                ? "bg-[oklch(0.28_0.008_255)] text-[oklch(0.93_0.003_247)]"
-                : "bg-[oklch(0.93_0.003_247)] text-[oklch(0.45_0.008_255)]"
+                ? "bg-[oklch(0.15_0.04_255)] text-[oklch(0.90_0.008_70)]"
+                : "bg-[oklch(0.90_0.008_70)] text-[oklch(0.45_0.008_255)]"
             }`}
           >
             <Heart size={11} className={favoritesOnly ? "fill-current" : ""} />
@@ -212,8 +212,8 @@ export function JournalList({ outfits: initial }: { outfits: Outfit[] }) {
               onClick={() => setOccasionFilter(prev => (prev === occ ? null : occ))}
               className={`shrink-0 h-8 px-3 rounded-full text-xs transition-colors ${
                 occasionFilter === occ
-                  ? "bg-[oklch(0.28_0.008_255)] text-[oklch(0.93_0.003_247)]"
-                  : "bg-[oklch(0.93_0.003_247)] text-[oklch(0.45_0.008_255)]"
+                  ? "bg-[oklch(0.15_0.04_255)] text-[oklch(0.90_0.008_70)]"
+                  : "bg-[oklch(0.90_0.008_70)] text-[oklch(0.45_0.008_255)]"
               }`}
             >
               {occ}
@@ -225,12 +225,12 @@ export function JournalList({ outfits: initial }: { outfits: Outfit[] }) {
       {/* Active filter clear */}
       {hasActiveFilter && !editing && (
         <div className="flex items-center gap-2 mb-4">
-          <p className="text-xs text-[oklch(0.52_0.012_255)]">
+          <p className="text-xs text-[oklch(0.52_0.015_255)]">
             {filtered.length} {filtered.length === 1 ? "outfit" : "outfits"}
           </p>
           <button
             onClick={clearFilters}
-            className="text-xs text-[oklch(0.45_0.012_255)] underline underline-offset-2"
+            className="text-xs text-[oklch(0.42_0.015_255)] underline underline-offset-2"
           >
             Clear
           </button>
@@ -247,13 +247,13 @@ export function JournalList({ outfits: initial }: { outfits: Outfit[] }) {
         <>
           {filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center min-h-[30vh] text-center">
-              <p className="text-[oklch(0.6_0.006_255)] text-sm">No outfits match.</p>
+              <p className="text-[oklch(0.52_0.015_255)] text-sm">No outfits match.</p>
             </div>
           ) : (
             <div className="space-y-10 pb-4">
               {groups.map(({ label, outfits: group }) => (
                 <section key={label}>
-                  <p className="text-[10px] tracking-[0.25em] uppercase text-[oklch(0.52_0.012_255)] mb-4">
+                  <p className="text-[10px] tracking-[0.25em] uppercase text-[oklch(0.52_0.015_255)] mb-4">
                     {label}
                   </p>
                   <div className="grid grid-cols-2 gap-4">

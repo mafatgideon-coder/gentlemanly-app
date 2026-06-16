@@ -37,8 +37,8 @@ export function WeekStrip({ weekOutfits }: WeekStripProps) {
   })
 
   return (
-    <div className="px-5 pt-3 pb-3">
-      <p className="text-[9px] tracking-[0.25em] uppercase text-[oklch(0.38_0.008_255)] mb-2">
+    <div className="px-4 pt-3 pb-3">
+      <p className="text-[9px] tracking-[0.25em] uppercase text-[oklch(0.52_0.015_255)] mb-2">
         This week
       </p>
       <div className="grid grid-cols-7 gap-1">
@@ -46,22 +46,18 @@ export function WeekStrip({ weekOutfits }: WeekStripProps) {
           const image = outfit?.flatlay_url ?? outfit?.photo_url
           const slot = (
             <div className="flex flex-col items-center gap-1">
-              <span className={`text-[10px] font-medium tracking-wide ${
+              <span className={`text-[9px] font-medium tracking-wide ${
                 isToday
-                  ? "text-[oklch(0.92_0.003_247)]"
-                  : "text-[oklch(0.38_0.008_255)]"
+                  ? "text-[oklch(0.22_0.07_255)]"
+                  : "text-[oklch(0.62_0.008_255)]"
               }`}>
                 {DAY_LABELS[i]}
               </span>
-              <div className={`relative w-full aspect-square rounded-sm overflow-hidden ${
+              <div className={`relative w-full aspect-square rounded-md overflow-hidden ${
                 isToday && !outfit
-                  ? "border border-dashed border-[oklch(0.35_0.008_255)]"
+                  ? "border border-dashed border-[oklch(0.22_0.07_255)]"
                   : ""
-              } ${
-                isFuture
-                  ? "opacity-20"
-                  : ""
-              }`}>
+              } ${isFuture ? "opacity-30" : ""}`}>
                 {image ? (
                   <Image
                     src={image}
@@ -71,9 +67,13 @@ export function WeekStrip({ weekOutfits }: WeekStripProps) {
                     sizes="(max-width: 480px) 14vw, 60px"
                   />
                 ) : (
-                  <div className="w-full h-full bg-[oklch(0.17_0.008_255)] flex items-center justify-center">
+                  <div className={`w-full h-full flex items-center justify-center ${
+                    isToday
+                      ? "bg-[oklch(0.22_0.07_255)]/10"
+                      : "bg-[oklch(0.90_0.008_70)]"
+                  }`}>
                     {isToday && (
-                      <div className="w-1 h-1 rounded-full bg-[oklch(0.35_0.008_255)]" />
+                      <div className="w-1 h-1 rounded-full bg-[oklch(0.22_0.07_255)]" />
                     )}
                   </div>
                 )}

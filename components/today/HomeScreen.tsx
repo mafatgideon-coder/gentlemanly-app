@@ -46,21 +46,21 @@ export function HomeScreen({
     : null
 
   return (
-    <div className="h-[calc(100vh-5rem)] overflow-hidden bg-[oklch(0.10_0.01_255)] text-[oklch(0.93_0.003_247)] flex flex-col">
+    <div className="h-[calc(100vh-5rem)] overflow-hidden bg-[oklch(0.93_0.02_70)] flex flex-col">
 
       {/* ── Date header ── */}
       <div className="px-5 pt-10 pb-2 shrink-0">
-        <p className="text-[9px] tracking-[0.35em] uppercase text-[oklch(0.38_0.008_255)]">
+        <p className="text-[9px] tracking-[0.35em] uppercase text-[oklch(0.52_0.015_255)]">
           {dayName}
         </p>
-        <h1 className="text-[2rem] font-light tracking-tight leading-none mt-0.5">
+        <h1 className="text-[2rem] font-light tracking-tight leading-none mt-0.5 text-[oklch(0.15_0.04_255)]">
           {dateLabel}
         </h1>
       </div>
 
       {/* ── Primary card ── */}
       <div className="px-4 pt-3 shrink-0">
-        <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-[oklch(0.15_0.01_255)]">
+        <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-[oklch(0.22_0.07_255)]">
 
           {/* Background image */}
           {primaryImage && (
@@ -73,8 +73,8 @@ export function HomeScreen({
             />
           )}
 
-          {/* Gradient */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/25 to-transparent" />
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
 
           {todayOutfit ? (
             /* ── Logged state ── */
@@ -84,14 +84,14 @@ export function HomeScreen({
             >
               <div>
                 {todayOutfit.occasion && (
-                  <p className="text-[9px] tracking-[0.3em] uppercase text-[oklch(0.62_0.008_255)] mb-1">
+                  <p className="text-[9px] tracking-[0.3em] uppercase text-white/60 mb-1">
                     {todayOutfit.occasion}
                   </p>
                 )}
-                <p className="text-lg font-light text-[oklch(0.95_0.003_247)]">
+                <p className="text-lg font-light text-white">
                   Today&apos;s outfit
                 </p>
-                <p className="text-[11px] text-[oklch(0.52_0.008_255)] mt-0.5">
+                <p className="text-[11px] text-white/50 mt-0.5">
                   Logged at {formatTime(todayOutfit.logged_at)}
                 </p>
               </div>
@@ -102,10 +102,10 @@ export function HomeScreen({
               {/* Camera button — top right */}
               <button
                 onClick={openLogger}
-                className="absolute top-3 right-3 w-10 h-10 rounded-full bg-[oklch(0.93_0.003_247)] flex items-center justify-center shadow-xl"
+                className="absolute top-3 right-3 w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-lg"
                 aria-label="Log today's outfit"
               >
-                <Camera size={16} className="text-[oklch(0.10_0.01_255)]" />
+                <Camera size={16} className="text-[oklch(0.22_0.07_255)]" />
               </button>
 
               {/* Bottom CTA */}
@@ -113,12 +113,12 @@ export function HomeScreen({
                 onClick={openLogger}
                 className="absolute bottom-0 left-0 right-0 p-4 text-left"
               >
-                <p className="text-[9px] tracking-[0.25em] uppercase text-[oklch(0.48_0.008_255)] mb-1">
+                <p className="text-[9px] tracking-[0.25em] uppercase text-white/45 mb-1">
                   {primaryOutfit
                     ? `Last logged ${relativeDay(primaryOutfit.logged_at)}`
                     : "No entries yet"}
                 </p>
-                <p className="text-lg font-light text-[oklch(0.95_0.003_247)]">
+                <p className="text-lg font-light text-white">
                   Log today&apos;s outfit
                 </p>
               </button>
@@ -127,26 +127,26 @@ export function HomeScreen({
         </div>
       </div>
 
-      {/* ── Week strip ── */}
-      <div className="shrink-0">
+      {/* ── Week strip (white card) ── */}
+      <div className="mx-4 mt-3 bg-white rounded-2xl shrink-0">
         <WeekStrip weekOutfits={weekOutfits} />
       </div>
 
-      {/* ── Bottom row: memories + recent (fills remaining space) ── */}
-      <div className="flex gap-3 px-4 pb-3 min-h-0 flex-1">
+      {/* ── Bottom row: memories + recent ── */}
+      <div className="flex gap-3 px-4 pb-3 mt-3 min-h-0 flex-1">
 
-        {/* Memories — 2 items stacked vertically */}
+        {/* Memories */}
         {memories.length > 0 && (
-          <div className="flex flex-col gap-2 w-[calc(50%-6px)] shrink-0">
-            <p className="text-[9px] tracking-[0.3em] uppercase text-[oklch(0.38_0.008_255)]">
+          <div className="flex flex-col gap-2 w-[calc(50%-6px)] shrink-0 bg-white rounded-2xl p-3">
+            <p className="text-[9px] tracking-[0.3em] uppercase text-[oklch(0.52_0.015_255)] shrink-0">
               Memories
             </p>
-            <div className="flex flex-col gap-2 flex-1">
+            <div className="flex flex-col gap-2 flex-1 min-h-0">
               {memories.slice(0, 2).map(({ label, outfit }) => {
                 const img = outfit.flatlay_url ?? outfit.photo_url
                 return (
-                  <Link key={`${label}-${outfit.id}`} href={`/journal/${outfit.id}`} className="flex-1">
-                    <div className="relative h-full rounded-xl overflow-hidden bg-[oklch(0.15_0.01_255)]">
+                  <Link key={`${label}-${outfit.id}`} href={`/journal/${outfit.id}`} className="flex-1 min-h-0">
+                    <div className="relative h-full rounded-xl overflow-hidden bg-[oklch(0.90_0.008_70)]">
                       {img && (
                         <Image
                           src={img}
@@ -156,13 +156,13 @@ export function HomeScreen({
                           sizes="(max-width: 480px) 42vw, 180px"
                         />
                       )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
                       <div className="absolute bottom-0 left-0 right-0 p-2">
-                        <p className="text-[9px] tracking-[0.15em] uppercase text-[oklch(0.58_0.008_255)] leading-none">
+                        <p className="text-[9px] tracking-[0.15em] uppercase text-white/60 leading-none">
                           {label}
                         </p>
                         {outfit.occasion && (
-                          <p className="text-[12px] font-light text-[oklch(0.90_0.003_247)] mt-0.5 leading-none">
+                          <p className="text-[12px] font-light text-white mt-0.5 leading-none">
                             {outfit.occasion}
                           </p>
                         )}
@@ -175,22 +175,18 @@ export function HomeScreen({
           </div>
         )}
 
-        {/* Recent entries — vertical stack */}
+        {/* Recent entries */}
         {recentEntries.length > 0 && (
-          <div className="flex flex-col gap-2 flex-1 min-w-0">
-            <p className="text-[9px] tracking-[0.3em] uppercase text-[oklch(0.38_0.008_255)]">
+          <div className="flex flex-col gap-2 flex-1 min-w-0 bg-white rounded-2xl p-3">
+            <p className="text-[9px] tracking-[0.3em] uppercase text-[oklch(0.52_0.015_255)] shrink-0">
               Recent
             </p>
-            <div className="flex flex-col gap-2 flex-1">
+            <div className="flex flex-col gap-2 flex-1 min-h-0">
               {recentEntries.slice(0, 2).map(outfit => {
                 const img = outfit.flatlay_url ?? outfit.photo_url
                 return (
-                  <Link
-                    key={outfit.id}
-                    href={`/journal/${outfit.id}`}
-                    className="flex-1"
-                  >
-                    <div className="relative h-full rounded-xl overflow-hidden bg-[oklch(0.15_0.01_255)]">
+                  <Link key={outfit.id} href={`/journal/${outfit.id}`} className="flex-1 min-h-0">
+                    <div className="relative h-full rounded-xl overflow-hidden bg-[oklch(0.90_0.008_70)]">
                       {img && (
                         <Image
                           src={img}
@@ -200,13 +196,13 @@ export function HomeScreen({
                           sizes="(max-width: 480px) 42vw, 180px"
                         />
                       )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
                       <div className="absolute bottom-0 left-0 right-0 p-2">
-                        <p className="text-[9px] tracking-wide text-[oklch(0.55_0.008_255)] leading-none">
+                        <p className="text-[9px] tracking-wide text-white/60 leading-none">
                           {relativeDay(outfit.logged_at)}
                         </p>
                         {outfit.occasion && (
-                          <p className="text-[12px] font-light text-[oklch(0.90_0.003_247)] mt-0.5 leading-none">
+                          <p className="text-[12px] font-light text-white mt-0.5 leading-none">
                             {outfit.occasion}
                           </p>
                         )}

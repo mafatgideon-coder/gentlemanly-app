@@ -22,7 +22,7 @@ export function OutfitCard({ outfit, editing, selected, onToggle }: OutfitCardPr
 
   const inner = (
     <>
-      <div className="relative aspect-square w-full bg-[oklch(0.93_0.003_247)] rounded-sm overflow-hidden">
+      <div className="relative aspect-square w-full bg-[oklch(0.90_0.008_70)] rounded-sm overflow-hidden">
         {image ? (
           <Image
             src={image}
@@ -32,7 +32,7 @@ export function OutfitCard({ outfit, editing, selected, onToggle }: OutfitCardPr
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <span className="text-[oklch(0.6_0.006_255)] text-xs">No image</span>
+            <span className="text-[oklch(0.52_0.015_255)] text-xs">No image</span>
           </div>
         )}
 
@@ -56,12 +56,12 @@ export function OutfitCard({ outfit, editing, selected, onToggle }: OutfitCardPr
 
       <div className="mt-3 space-y-0.5">
         <div className="flex items-baseline justify-between">
-          <p className="text-sm text-[oklch(0.72_0.006_255)] font-light">
+          <p className="text-sm text-[oklch(0.52_0.015_255)] font-light">
             {dayOfWeek(outfit.logged_at)}
           </p>
-          <p className="text-[10px] text-[oklch(0.45_0.008_255)]">{outfit.item_count} items</p>
+          <p className="text-[10px] text-[oklch(0.42_0.015_255)]">{outfit.item_count} items</p>
         </div>
-        <p className="text-xs text-[oklch(0.45_0.008_255)]">
+        <p className="text-xs text-[oklch(0.42_0.015_255)]">
           {outfit.occasion ? `${outfit.occasion} · ` : ""}{formatShortDate(outfit.logged_at)}
         </p>
       </div>

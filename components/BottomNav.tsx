@@ -23,7 +23,7 @@ export function BottomNav() {
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[oklch(0.975_0.003_247)] border-t border-[oklch(0.88_0.006_255)]">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[oklch(0.93_0.02_70)] border-t border-[oklch(0.87_0.012_70)]">
       <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-2 relative">
         {/* Left tabs */}
         {LEFT_TABS.map(({ href, label, Icon }) => (
@@ -33,8 +33,8 @@ export function BottomNav() {
             className={cn(
               "flex flex-col items-center gap-1 flex-1 py-2 transition-colors",
               isActive(href)
-                ? "text-[oklch(0.18_0.008_255)]"
-                : "text-[oklch(0.62_0.006_255)]"
+                ? "text-[oklch(0.22_0.07_255)]"
+                : "text-[oklch(0.62_0.008_255)]"
             )}
           >
             <Icon size={22} strokeWidth={isActive(href) ? 2.2 : 1.5} />
@@ -57,8 +57,8 @@ export function BottomNav() {
             className={cn(
               "flex flex-col items-center gap-1 flex-1 py-2 transition-colors",
               isActive(href)
-                ? "text-[oklch(0.18_0.008_255)]"
-                : "text-[oklch(0.62_0.006_255)]"
+                ? "text-[oklch(0.22_0.07_255)]"
+                : "text-[oklch(0.62_0.008_255)]"
             )}
           >
             <Icon size={22} strokeWidth={isActive(href) ? 2.2 : 1.5} />

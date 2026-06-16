@@ -9,7 +9,7 @@ export function CameraButton() {
   return (
     <button
       onClick={openLogger}
-      className="w-14 h-14 rounded-full bg-[oklch(0.18_0.008_255)] border border-[oklch(0.32_0.008_255)] flex items-center justify-center shadow-lg hover:bg-[oklch(0.24_0.01_255)] transition-colors"
+      className="w-14 h-14 rounded-full bg-[oklch(0.22_0.07_255)] flex items-center justify-center shadow-lg hover:bg-[oklch(0.28_0.07_255)] transition-colors"
       aria-label="Log outfit"
     >
       <Camera size={22} className="text-[oklch(0.93_0.003_247)]" />

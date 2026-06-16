@@ -65,7 +65,7 @@ export function OutfitActions({ id, isFavorite, occasion, notes }: OutfitActions
       <div className="flex items-center gap-1">
         <button
           onClick={toggleFavorite}
-          className="w-9 h-9 flex items-center justify-center rounded-lg transition-colors hover:bg-[oklch(0.93_0.003_247)]"
+          className="w-9 h-9 flex items-center justify-center rounded-lg transition-colors hover:bg-[oklch(0.90_0.008_70)]"
           aria-label={favorite ? "Remove from favorites" : "Add to favorites"}
         >
           <Heart
@@ -75,7 +75,7 @@ export function OutfitActions({ id, isFavorite, occasion, notes }: OutfitActions
         </button>
         <button
           onClick={() => setEditOpen(true)}
-          className="w-9 h-9 flex items-center justify-center rounded-lg transition-colors hover:bg-[oklch(0.93_0.003_247)]"
+          className="w-9 h-9 flex items-center justify-center rounded-lg transition-colors hover:bg-[oklch(0.90_0.008_70)]"
           aria-label="Edit outfit"
         >
           <Pencil size={16} className="text-[oklch(0.62_0.006_255)]" />
@@ -85,33 +85,33 @@ export function OutfitActions({ id, isFavorite, occasion, notes }: OutfitActions
       <Sheet open={editOpen} onOpenChange={setEditOpen}>
         <SheetContent
           side="bottom"
-          className="bg-[oklch(0.14_0.01_255)] border-t border-[oklch(0.25_0.008_255)] rounded-t-2xl px-5 pb-10"
+          className="bg-white border-t border-[oklch(0.87_0.012_70)] rounded-t-2xl px-5 pb-10"
         >
           <div className="flex justify-center pt-3 pb-4">
-            <div className="w-10 h-1 rounded-full bg-[oklch(0.35_0.008_255)]" />
+            <div className="w-10 h-1 rounded-full bg-[oklch(0.87_0.012_70)]" />
           </div>
 
           <SheetHeader className="mb-5">
-            <SheetTitle className="text-base font-normal tracking-wide text-[oklch(0.92_0.003_247)]">
+            <SheetTitle className="text-base font-normal tracking-wide text-[oklch(0.15_0.04_255)]">
               Edit outfit
             </SheetTitle>
           </SheetHeader>
 
           <div className="space-y-5">
             <div className="space-y-2">
-              <label className="text-[10px] tracking-[0.2em] uppercase text-[oklch(0.45_0.008_255)]">
+              <label className="text-[10px] tracking-[0.2em] uppercase text-[oklch(0.52_0.015_255)]">
                 Occasion
               </label>
               <Select value={editOccasion} onValueChange={v => setEditOccasion(v ?? "")}>
-                <SelectTrigger className="bg-[oklch(0.20_0.01_255)] border-[oklch(0.28_0.008_255)] text-[oklch(0.72_0.006_255)] h-11 rounded-lg">
+                <SelectTrigger className="bg-[oklch(0.93_0.02_70)] border-[oklch(0.87_0.012_70)] text-[oklch(0.22_0.04_255)] h-11 rounded-lg">
                   <SelectValue placeholder="Select occasion" />
                 </SelectTrigger>
-                <SelectContent className="bg-[oklch(0.20_0.01_255)] border-[oklch(0.28_0.008_255)]">
+                <SelectContent className="bg-white border-[oklch(0.87_0.012_70)]">
                   {OCCASIONS.map(o => (
                     <SelectItem
                       key={o}
                       value={o}
-                      className="text-[oklch(0.72_0.006_255)] focus:bg-[oklch(0.28_0.01_255)] focus:text-[oklch(0.92_0.003_247)]"
+                      className="text-[oklch(0.22_0.04_255)] focus:bg-[oklch(0.93_0.02_70)] focus:text-[oklch(0.15_0.04_255)]"
                     >
                       {o}
                     </SelectItem>
@@ -121,21 +121,21 @@ export function OutfitActions({ id, isFavorite, occasion, notes }: OutfitActions
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] tracking-[0.2em] uppercase text-[oklch(0.45_0.008_255)]">
+              <label className="text-[10px] tracking-[0.2em] uppercase text-[oklch(0.52_0.015_255)]">
                 Notes
               </label>
               <Textarea
                 value={editNotes}
                 onChange={e => setEditNotes(e.target.value)}
                 placeholder="Add a note…"
-                className="bg-[oklch(0.20_0.01_255)] border-[oklch(0.28_0.008_255)] text-[oklch(0.72_0.006_255)] placeholder:text-[oklch(0.38_0.008_255)] rounded-lg resize-none min-h-20"
+                className="bg-[oklch(0.93_0.02_70)] border-[oklch(0.87_0.012_70)] text-[oklch(0.22_0.04_255)] placeholder:text-[oklch(0.62_0.010_255)] rounded-lg resize-none min-h-20"
               />
             </div>
 
             <Button
               onClick={saveEdit}
               disabled={saving}
-              className="w-full h-12 bg-[oklch(0.93_0.003_247)] text-[oklch(0.14_0.01_255)] hover:bg-white font-medium tracking-wide rounded-lg disabled:opacity-50"
+              className="w-full h-12 bg-[oklch(0.22_0.07_255)] text-white hover:bg-[oklch(0.28_0.07_255)] font-medium tracking-wide rounded-lg disabled:opacity-50"
             >
               {saving ? "Saving…" : "Save"}
             </Button>

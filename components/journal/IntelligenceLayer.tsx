@@ -154,7 +154,7 @@ export async function IntelligenceLayer({ outfitId, items, occasion, userId }: P
       {occasion && (
         <Link
           href={`/journal?occasion=${encodeURIComponent(occasion)}`}
-          className="inline-block text-xs text-[oklch(0.45_0.012_255)] hover:text-[oklch(0.28_0.008_255)] transition-colors tracking-wide"
+          className="inline-block text-xs text-[oklch(0.42_0.015_255)] hover:text-[oklch(0.22_0.04_255)] transition-colors tracking-wide"
         >
           See all {occasion} outfits →
         </Link>
@@ -191,7 +191,7 @@ export async function IntelligenceLayer({ outfitId, items, occasion, userId }: P
           <p className="text-[10px] tracking-[0.25em] uppercase text-[oklch(0.62_0.008_255)] mb-3">
             Garment history
           </p>
-          <div className="divide-y divide-[oklch(0.88_0.006_255)]">
+          <div className="divide-y divide-[oklch(0.87_0.012_70)]">
             {items.map((item, i) => {
               const info = garmentMap.get(item.name)
               if (!info) return null
@@ -201,7 +201,7 @@ export async function IntelligenceLayer({ outfitId, items, occasion, userId }: P
                     <span className="text-[10px] tracking-widest uppercase text-[oklch(0.55_0.008_255)]">
                       {item.category}
                     </span>
-                    <p className="text-sm text-[oklch(0.28_0.008_255)] mt-0.5">{item.name}</p>
+                    <p className="text-sm text-[oklch(0.22_0.04_255)] mt-0.5">{item.name}</p>
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-[11px] text-[oklch(0.52_0.008_255)]">

@@ -45,12 +45,12 @@ export default async function YearReviewPage() {
   const topMonth = monthCounts[topMonthIndex] > 0 ? MONTH_NAMES[topMonthIndex] : null
 
   return (
-    <div className="min-h-screen bg-[oklch(0.965_0.003_247)]">
+    <div className="min-h-screen bg-[oklch(0.93_0.02_70)]">
       {/* Back nav */}
       <div className="px-5 pt-12 pb-2">
         <Link
           href="/journal"
-          className="inline-flex items-center gap-2 text-[oklch(0.6_0.006_255)] hover:text-[oklch(0.28_0.008_255)] transition-colors text-sm"
+          className="inline-flex items-center gap-2 text-[oklch(0.52_0.015_255)] hover:text-[oklch(0.22_0.07_255)] transition-colors text-sm"
         >
           <ArrowLeft size={16} />
           Journal
@@ -58,35 +58,35 @@ export default async function YearReviewPage() {
       </div>
 
       <div className="px-5 pt-4 pb-8">
-        <p className="text-[10px] tracking-[0.3em] uppercase text-[oklch(0.52_0.012_255)]">
+        <p className="text-[10px] tracking-[0.3em] uppercase text-[oklch(0.52_0.015_255)]">
           Reflection
         </p>
-        <h1 className="text-3xl font-light tracking-tight mt-1 text-[oklch(0.18_0.008_255)]">
+        <h1 className="text-3xl font-light tracking-tight mt-1 text-[oklch(0.15_0.04_255)]">
           {year}
         </h1>
       </div>
 
       {total === 0 ? (
         <div className="px-5 py-20 text-center">
-          <p className="text-[oklch(0.6_0.006_255)] text-sm">No outfits logged this year yet.</p>
+          <p className="text-[oklch(0.52_0.015_255)] text-sm">No outfits logged this year yet.</p>
         </div>
       ) : (
         <>
           {/* Stats */}
           <div className="px-5 pb-8 grid grid-cols-3 gap-4">
             <div className="bg-white rounded-xl px-4 py-5 shadow-sm">
-              <p className="text-2xl font-light text-[oklch(0.18_0.008_255)]">{total}</p>
-              <p className="text-[10px] tracking-[0.15em] uppercase text-[oklch(0.55_0.008_255)] mt-1">
+              <p className="text-2xl font-light text-[oklch(0.15_0.04_255)]">{total}</p>
+              <p className="text-[10px] tracking-[0.15em] uppercase text-[oklch(0.52_0.015_255)] mt-1">
                 Outfits
               </p>
             </div>
 
             {topOccasion && (
               <div className="bg-white rounded-xl px-4 py-5 shadow-sm col-span-1">
-                <p className="text-sm font-medium text-[oklch(0.18_0.008_255)] leading-snug">
+                <p className="text-sm font-medium text-[oklch(0.15_0.04_255)] leading-snug">
                   {topOccasion[0]}
                 </p>
-                <p className="text-[10px] tracking-[0.15em] uppercase text-[oklch(0.55_0.008_255)] mt-1">
+                <p className="text-[10px] tracking-[0.15em] uppercase text-[oklch(0.52_0.015_255)] mt-1">
                   Top occasion
                 </p>
               </div>
@@ -94,10 +94,10 @@ export default async function YearReviewPage() {
 
             {topMonth && (
               <div className="bg-white rounded-xl px-4 py-5 shadow-sm col-span-1">
-                <p className="text-sm font-medium text-[oklch(0.18_0.008_255)] leading-snug">
+                <p className="text-sm font-medium text-[oklch(0.15_0.04_255)] leading-snug">
                   {topMonth}
                 </p>
-                <p className="text-[10px] tracking-[0.15em] uppercase text-[oklch(0.55_0.008_255)] mt-1">
+                <p className="text-[10px] tracking-[0.15em] uppercase text-[oklch(0.52_0.015_255)] mt-1">
                   Most active
                 </p>
               </div>
@@ -106,7 +106,7 @@ export default async function YearReviewPage() {
 
           {/* Month bars */}
           <div className="px-5 pb-8">
-            <p className="text-[10px] tracking-[0.25em] uppercase text-[oklch(0.55_0.008_255)] mb-4">
+            <p className="text-[10px] tracking-[0.25em] uppercase text-[oklch(0.52_0.015_255)] mb-4">
               By month
             </p>
             <div className="space-y-2">
@@ -116,16 +116,16 @@ export default async function YearReviewPage() {
                 const pct = max > 0 ? (count / max) * 100 : 0
                 return (
                   <div key={i} className="flex items-center gap-3">
-                    <span className="text-[10px] text-[oklch(0.55_0.008_255)] w-7 shrink-0">
+                    <span className="text-[10px] text-[oklch(0.52_0.015_255)] w-7 shrink-0">
                       {MONTH_NAMES[i].slice(0, 3)}
                     </span>
-                    <div className="flex-1 h-1.5 bg-[oklch(0.91_0.004_247)] rounded-full overflow-hidden">
+                    <div className="flex-1 h-1.5 bg-[oklch(0.87_0.012_70)] rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-[oklch(0.45_0.008_255)] rounded-full transition-all"
+                        className="h-full bg-[oklch(0.42_0.015_255)] rounded-full transition-all"
                         style={{ width: `${pct}%` }}
                       />
                     </div>
-                    <span className="text-[10px] text-[oklch(0.55_0.008_255)] w-4 text-right shrink-0">
+                    <span className="text-[10px] text-[oklch(0.52_0.015_255)] w-4 text-right shrink-0">
                       {count || ""}
                     </span>
                   </div>
@@ -136,7 +136,7 @@ export default async function YearReviewPage() {
 
           {/* Outfit grid */}
           <div className="px-5 pb-28">
-            <p className="text-[10px] tracking-[0.25em] uppercase text-[oklch(0.55_0.008_255)] mb-4">
+            <p className="text-[10px] tracking-[0.25em] uppercase text-[oklch(0.52_0.015_255)] mb-4">
               The archive
             </p>
             <div className="grid grid-cols-3 gap-1">

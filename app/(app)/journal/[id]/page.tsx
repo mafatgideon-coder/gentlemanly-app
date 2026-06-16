@@ -31,12 +31,12 @@ export default async function OutfitDetailPage({
   const displayImage = outfit.flatlay_url ?? outfit.photo_url
 
   return (
-    <div className="min-h-screen bg-[oklch(0.965_0.003_247)]">
+    <div className="min-h-screen bg-[oklch(0.93_0.02_70)]">
       {/* Top nav */}
       <div className="px-5 pt-12 pb-2 flex items-center justify-between">
         <Link
           href="/journal"
-          className="inline-flex items-center gap-2 text-[oklch(0.6_0.006_255)] hover:text-[oklch(0.28_0.008_255)] transition-colors text-sm"
+          className="inline-flex items-center gap-2 text-[oklch(0.52_0.015_255)] hover:text-[oklch(0.22_0.07_255)] transition-colors text-sm"
         >
           <ArrowLeft size={16} />
           Journal
@@ -52,17 +52,17 @@ export default async function OutfitDetailPage({
 
       {/* Date + occasion */}
       <div className="px-5 pt-4 pb-3">
-        <p className="text-xs text-[oklch(0.65_0.006_255)]">
+        <p className="text-xs text-[oklch(0.52_0.015_255)]">
           {formatDate(outfit.logged_at)}
         </p>
         {outfit.occasion && (
-          <p className="text-sm text-[oklch(0.52_0.008_255)] mt-0.5">{outfit.occasion}</p>
+          <p className="text-sm text-[oklch(0.42_0.015_255)] mt-0.5">{outfit.occasion}</p>
         )}
       </div>
 
       {/* Editorial image */}
       <div className="px-4">
-        <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-[oklch(0.935_0.005_247)] shadow-sm">
+        <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-[oklch(0.88_0.012_70)] shadow-sm">
           {displayImage ? (
             <Image
               src={displayImage}
@@ -82,23 +82,23 @@ export default async function OutfitDetailPage({
       {/* Notes */}
       {outfit.notes && (
         <div className="px-5 pt-5">
-          <p className="text-sm text-[oklch(0.52_0.008_255)] leading-relaxed">{outfit.notes}</p>
+          <p className="text-sm text-[oklch(0.42_0.015_255)] leading-relaxed">{outfit.notes}</p>
         </div>
       )}
 
       {/* Items worn */}
       {outfit.items && outfit.items.length > 0 ? (
         <div className="px-5 pt-6">
-          <p className="text-[10px] tracking-[0.25em] uppercase text-[oklch(0.62_0.008_255)] mb-3">
+          <p className="text-[10px] tracking-[0.25em] uppercase text-[oklch(0.52_0.015_255)] mb-3">
             What was worn
           </p>
-          <div className="divide-y divide-[oklch(0.88_0.006_255)]">
+          <div className="divide-y divide-[oklch(0.87_0.012_70)]">
             {outfit.items.map((item, i) => (
               <div key={i} className="flex items-center gap-4 py-3">
-                <span className="text-[10px] tracking-widest uppercase text-[oklch(0.55_0.008_255)] w-24 shrink-0">
+                <span className="text-[10px] tracking-widest uppercase text-[oklch(0.55_0.010_255)] w-24 shrink-0">
                   {item.category}
                 </span>
-                <span className="text-sm text-[oklch(0.28_0.008_255)]">{item.name}</span>
+                <span className="text-sm text-[oklch(0.22_0.04_255)]">{item.name}</span>
               </div>
             ))}
           </div>
