@@ -1,14 +1,16 @@
 import Image from "next/image"
 import { formatTime } from "@/lib/utils"
 import { WeekStrip } from "./WeekStrip"
+import { OnThisDay } from "./OnThisDay"
 import type { Outfit } from "@/lib/types"
 
 interface TodayLoggedProps {
   outfit: Outfit
   weekOutfits: Outfit[]
+  onThisDay: Outfit | null
 }
 
-export function TodayLogged({ outfit, weekOutfits }: TodayLoggedProps) {
+export function TodayLogged({ outfit, weekOutfits, onThisDay }: TodayLoggedProps) {
   return (
     <div className="min-h-[calc(100vh-5rem)] bg-[oklch(0.12_0.01_255)] text-[oklch(0.92_0.003_247)]">
       {/* Date header */}
@@ -61,6 +63,8 @@ export function TodayLogged({ outfit, weekOutfits }: TodayLoggedProps) {
           <span>Logged at {formatTime(outfit.logged_at)}</span>
         </div>
       </div>
+
+      {onThisDay && <OnThisDay outfit={onThisDay} />}
     </div>
   )
 }

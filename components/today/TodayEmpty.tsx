@@ -1,11 +1,13 @@
 import { WeekStrip } from "./WeekStrip"
+import { OnThisDay } from "./OnThisDay"
 import type { Outfit } from "@/lib/types"
 
 interface TodayEmptyProps {
   weekOutfits: Outfit[]
+  onThisDay: Outfit | null
 }
 
-export function TodayEmpty({ weekOutfits }: TodayEmptyProps) {
+export function TodayEmpty({ weekOutfits, onThisDay }: TodayEmptyProps) {
   return (
     <div className="min-h-[calc(100vh-5rem)] bg-[oklch(0.12_0.01_255)] text-[oklch(0.92_0.003_247)]">
       {/* Date header */}
@@ -33,6 +35,8 @@ export function TodayEmpty({ weekOutfits }: TodayEmptyProps) {
           Tap + to log today&apos;s outfit
         </p>
       </div>
+
+      {onThisDay && <OnThisDay outfit={onThisDay} />}
     </div>
   )
 }

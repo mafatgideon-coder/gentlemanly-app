@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { Heart, Search, X } from "lucide-react"
 import { groupOutfitsByDay } from "@/lib/utils"
 import { OutfitCard } from "@/components/outfit/OutfitCard"
@@ -111,6 +112,12 @@ export function JournalList({ outfits: initial }: { outfits: Outfit[] }) {
         <div>
           <p className="text-[10px] tracking-[0.3em] uppercase text-[oklch(0.52_0.012_255)]">Archive</p>
           <h1 className="text-3xl font-light tracking-tight mt-1 text-[oklch(0.18_0.008_255)]">Journal</h1>
+          <Link
+            href="/journal/year"
+            className="text-[10px] tracking-[0.15em] uppercase text-[oklch(0.52_0.012_255)] hover:text-[oklch(0.28_0.008_255)] transition-colors mt-1 inline-block"
+          >
+            {new Date().getFullYear()} in review →
+          </Link>
         </div>
 
         <div className="flex items-center gap-3 pt-1">

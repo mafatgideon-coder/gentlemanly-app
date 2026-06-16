@@ -51,11 +51,15 @@ export function CalendarView({ outfits }: { outfits: Outfit[] }) {
   const startOffset = mondayIndex(new Date(year, month, 1))
 
   const outfitsByDay = new Map<number, Outfit>()
+  let monthCount = 0
   for (const outfit of outfits) {
     const d = new Date(outfit.logged_at)
     if (d.getFullYear() === year && d.getMonth() === month) {
       const day = d.getDate()
-      if (!outfitsByDay.has(day)) outfitsByDay.set(day, outfit)
+      if (!outfitsByDay.has(day)) {
+        outfitsByDay.set(day, outfit)
+        monthCount++
+      }
     }
   }
 
@@ -77,9 +81,16 @@ export function CalendarView({ outfits }: { outfits: Outfit[] }) {
         >
           <ChevronLeft size={18} />
         </button>
-        <span className="text-sm font-medium text-[oklch(0.28_0.008_255)] tracking-wide">
-          {monthLabel}
-        </span>
+        <div className="text-center">
+          <span className="text-sm font-medium text-[oklch(0.28_0.008_255)] tracking-wide block">
+            {monthLabel}
+          </span>
+          {monthCount > 0 && (
+            <span className="text-[10px] text-[oklch(0.6_0.006_255)]">
+              {monthCount} {monthCount === 1 ? "outfit" : "outfits"}
+            </span>
+          )}
+        </div>
         <button
           onClick={nextMonth}
           disabled={isCurrentMonth}
