@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import { createClient } from "@/lib/supabase/server"
 import { JournalList } from "@/components/journal/JournalList"
 import type { Outfit } from "@/lib/types"
@@ -16,7 +17,9 @@ export default async function JournalPage() {
 
   return (
     <div className="px-5 pt-14">
-      <JournalList outfits={outfits} />
+      <Suspense fallback={null}>
+        <JournalList outfits={outfits} />
+      </Suspense>
     </div>
   )
 }

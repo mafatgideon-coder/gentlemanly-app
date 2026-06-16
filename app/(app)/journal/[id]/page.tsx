@@ -4,7 +4,9 @@ import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import { formatDate } from "@/lib/utils"
 import { notFound } from "next/navigation"
+import { Suspense } from "react"
 import { OutfitActions } from "@/components/journal/OutfitActions"
+import { IntelligenceLayer } from "@/components/journal/IntelligenceLayer"
 import type { Outfit } from "@/lib/types"
 
 export default async function OutfitDetailPage({
@@ -86,7 +88,7 @@ export default async function OutfitDetailPage({
 
       {/* Items worn */}
       {outfit.items && outfit.items.length > 0 ? (
-        <div className="px-5 pt-6 pb-28">
+        <div className="px-5 pt-6">
           <p className="text-[10px] tracking-[0.25em] uppercase text-[oklch(0.62_0.008_255)] mb-3">
             What was worn
           </p>
@@ -101,9 +103,21 @@ export default async function OutfitDetailPage({
             ))}
           </div>
         </div>
-      ) : (
-        <div className="pb-28" />
+      ) : null}
+
+      {/* Intelligence layer — recall, repetition, occasion patterns, garment history */}
+      {outfit.items && outfit.items.length > 0 && (
+        <Suspense fallback={null}>
+          <IntelligenceLayer
+            outfitId={outfit.id}
+            items={outfit.items}
+            occasion={outfit.occasion}
+            userId={user!.id}
+          />
+        </Suspense>
       )}
+
+      <div className="pb-28" />
     </div>
   )
 }

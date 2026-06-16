@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Heart, Search, X } from "lucide-react"
 import { groupOutfitsByDay } from "@/lib/utils"
@@ -23,6 +23,7 @@ type View = "feed" | "calendar"
 
 export function JournalList({ outfits: initial }: { outfits: Outfit[] }) {
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   // Source state
   const [outfits, setOutfits] = useState(initial)
@@ -30,7 +31,9 @@ export function JournalList({ outfits: initial }: { outfits: Outfit[] }) {
   // View + filter state
   const [view, setView] = useState<View>("feed")
   const [search, setSearch] = useState("")
-  const [occasionFilter, setOccasionFilter] = useState<string | null>(null)
+  const [occasionFilter, setOccasionFilter] = useState<string | null>(
+    searchParams.get("occasion")
+  )
   const [favoritesOnly, setFavoritesOnly] = useState(false)
 
   // Edit-mode state (delete)
