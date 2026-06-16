@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import Image from "next/image"
 import Link from "next/link"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, ChevronRight } from "lucide-react"
 import { formatDate } from "@/lib/utils"
 import { notFound } from "next/navigation"
 import { Suspense } from "react"
@@ -94,12 +94,17 @@ export default async function OutfitDetailPage({
           </p>
           <div className="divide-y divide-[oklch(0.89_0.005_90)]">
             {outfit.items.map((item, i) => (
-              <div key={i} className="flex items-center gap-4 py-3">
+              <Link
+                key={i}
+                href={`/journal/garment/${encodeURIComponent(item.name)}?from=/journal/${outfit.id}`}
+                className="flex items-center gap-4 py-3 -mx-5 px-5 hover:bg-[oklch(0.91_0.004_90)] transition-colors"
+              >
                 <span className="text-[10px] tracking-widest uppercase text-[oklch(0.55_0.010_255)] w-24 shrink-0">
                   {item.category}
                 </span>
-                <span className="text-sm text-[oklch(0.22_0.04_255)]">{item.name}</span>
-              </div>
+                <span className="text-sm text-[oklch(0.22_0.04_255)] flex-1">{item.name}</span>
+                <ChevronRight size={14} className="text-[oklch(0.68_0.008_255)] shrink-0" />
+              </Link>
             ))}
           </div>
         </div>
