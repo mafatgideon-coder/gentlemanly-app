@@ -47,6 +47,9 @@ export function OutfitLogger({ open, onOpenChange }: OutfitLoggerProps) {
   const [detectedItems, setDetectedItems] = useState<DetectedItem[]>([])
   const [occasion, setOccasion] = useState<string>("")
   const [notes, setNotes] = useState("")
+  const [loggedDate, setLoggedDate] = useState<string>(() =>
+    new Date().toISOString().slice(0, 10)
+  )
   const [progressKey, setProgressKey] = useState<ProgressKey | null>(null)
   const [detectError, setDetectError] = useState<string | null>(null)
 
@@ -62,6 +65,7 @@ export function OutfitLogger({ open, onOpenChange }: OutfitLoggerProps) {
     setDetectedItems([])
     setOccasion("")
     setNotes("")
+    setLoggedDate(new Date().toISOString().slice(0, 10))
     setProgressKey(null)
     setDetectError(null)
   }
@@ -140,6 +144,10 @@ export function OutfitLogger({ open, onOpenChange }: OutfitLoggerProps) {
     setStep("saving")
     setProgress("generating")
 
+    // Convert date-only string to noon local time to avoid timezone boundary issues
+    const [y, m, d] = loggedDate.split("-").map(Number)
+    const logged_at = new Date(y, m - 1, d, 12, 0, 0).toISOString()
+
     await fetch("/api/outfits", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -149,6 +157,7 @@ export function OutfitLogger({ open, onOpenChange }: OutfitLoggerProps) {
         notes: notes || null,
         items: detectedItems,
         photo_storage_path: photoStoragePath,
+        logged_at,
       }),
     })
 
@@ -275,6 +284,20 @@ export function OutfitLogger({ open, onOpenChange }: OutfitLoggerProps) {
                 </div>
               </div>
             )}
+
+            {/* Date */}
+            <div className="space-y-2">
+              <label className="text-[10px] tracking-[0.2em] uppercase text-[oklch(0.45_0.008_255)]">
+                Date
+              </label>
+              <input
+                type="date"
+                value={loggedDate}
+                max={new Date().toISOString().slice(0, 10)}
+                onChange={e => setLoggedDate(e.target.value)}
+                className="w-full h-11 bg-[oklch(0.20_0.01_255)] border border-[oklch(0.28_0.008_255)] text-[oklch(0.72_0.006_255)] rounded-lg px-3 text-sm outline-none focus:border-[oklch(0.45_0.008_255)] transition-colors"
+              />
+            </div>
 
             {/* Occasion */}
             <div className="space-y-2">

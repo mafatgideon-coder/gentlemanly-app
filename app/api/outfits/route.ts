@@ -38,17 +38,30 @@ export async function POST(request: Request) {
     notes,
     items,
     photo_storage_path,
+    logged_at,
   }: {
     photo_url: string
     occasion: string | null
     notes: string | null
     items: DetectedItem[]
     photo_storage_path: string | null
+    logged_at?: string
   } = await request.json()
+
+  const insertData: Record<string, unknown> = {
+    user_id: user.id,
+    photo_url,
+    flatlay_url: null,
+    occasion,
+    notes,
+    item_count: items.length,
+    items,
+  }
+  if (logged_at) insertData.logged_at = logged_at
 
   const { data: outfit, error: outfitError } = await supabase
     .from("outfits")
-    .insert({ user_id: user.id, photo_url, flatlay_url: null, occasion, notes, item_count: items.length, items })
+    .insert(insertData)
     .select()
     .single()
 
