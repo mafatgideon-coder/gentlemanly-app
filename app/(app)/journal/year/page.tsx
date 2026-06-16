@@ -45,7 +45,7 @@ export default async function YearReviewPage() {
   const topMonth = monthCounts[topMonthIndex] > 0 ? MONTH_NAMES[topMonthIndex] : null
 
   return (
-    <div className="min-h-screen bg-[oklch(0.93_0.02_70)]">
+    <div className="min-h-screen bg-[oklch(0.94_0.006_90)]">
       {/* Back nav */}
       <div className="px-5 pt-12 pb-2">
         <Link
@@ -119,7 +119,7 @@ export default async function YearReviewPage() {
                     <span className="text-[10px] text-[oklch(0.52_0.015_255)] w-7 shrink-0">
                       {MONTH_NAMES[i].slice(0, 3)}
                     </span>
-                    <div className="flex-1 h-1.5 bg-[oklch(0.87_0.012_70)] rounded-full overflow-hidden">
+                    <div className="flex-1 h-1.5 bg-[oklch(0.89_0.005_90)] rounded-full overflow-hidden">
                       <div
                         className="h-full bg-[oklch(0.42_0.015_255)] rounded-full transition-all"
                         style={{ width: `${pct}%` }}

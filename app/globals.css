@@ -44,7 +44,7 @@
 
 /* Gentlemanly design tokens */
 :root {
-  --background: oklch(0.93 0.02 70);       /* warm cream */
+  --background: oklch(0.94 0.006 90);       /* warm cream */
   --foreground: oklch(0.15 0.04 255);      /* dark navy */
   --card: oklch(1 0 0);                    /* white cards */
   --card-foreground: oklch(0.15 0.04 255);
@@ -66,7 +66,7 @@
 
   /* Gentlemanly custom */
   --navy: oklch(0.22 0.07 255);
-  --cream: oklch(0.93 0.02 70);
+  --cream: oklch(0.94 0.006 90);
   --warm-grey: oklch(0.52 0.015 255);
 }
 

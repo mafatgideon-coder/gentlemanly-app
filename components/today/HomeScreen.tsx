@@ -46,7 +46,7 @@ export function HomeScreen({
     : null
 
   return (
-    <div className="h-[calc(100vh-5rem)] overflow-hidden bg-[oklch(0.93_0.02_70)] flex flex-col">
+    <div className="h-[calc(100vh-5rem)] overflow-hidden bg-[oklch(0.94_0.006_90)] flex flex-col">
 
       {/* ── Date header ── */}
       <div className="px-5 pt-10 pb-2 shrink-0">
@@ -146,7 +146,7 @@ export function HomeScreen({
                 const img = outfit.flatlay_url ?? outfit.photo_url
                 return (
                   <Link key={`${label}-${outfit.id}`} href={`/journal/${outfit.id}`} className="flex-1 min-h-0">
-                    <div className="relative h-full rounded-xl overflow-hidden bg-[oklch(0.90_0.008_70)]">
+                    <div className="relative h-full rounded-xl overflow-hidden bg-[oklch(0.91_0.004_90)]">
                       {img && (
                         <Image
                           src={img}
@@ -186,7 +186,7 @@ export function HomeScreen({
                 const img = outfit.flatlay_url ?? outfit.photo_url
                 return (
                   <Link key={outfit.id} href={`/journal/${outfit.id}`} className="flex-1 min-h-0">
-                    <div className="relative h-full rounded-xl overflow-hidden bg-[oklch(0.90_0.008_70)]">
+                    <div className="relative h-full rounded-xl overflow-hidden bg-[oklch(0.91_0.004_90)]">
                       {img && (
                         <Image
                           src={img}

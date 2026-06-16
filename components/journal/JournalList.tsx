@@ -4,8 +4,8 @@ import { useState, useMemo } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Heart, Search, X } from "lucide-react"
-import { groupOutfitsByDay } from "@/lib/utils"
-import { OutfitCard } from "@/components/outfit/OutfitCard"
+import { groupOutfitsByWeek } from "@/lib/utils"
+import { OutfitListItem } from "@/components/journal/OutfitListItem"
 import { CalendarView } from "@/components/journal/CalendarView"
 import type { Outfit, Occasion } from "@/lib/types"
 
@@ -89,7 +89,7 @@ export function JournalList({ outfits: initial }: { outfits: Outfit[] }) {
     })
   }, [outfits, occasionFilter, favoritesOnly, search])
 
-  const groups = groupOutfitsByDay(filtered)
+  const groups = groupOutfitsByWeek(filtered)
 
   const hasActiveFilter = !!occasionFilter || favoritesOnly || !!search.trim()
 
@@ -134,7 +134,7 @@ export function JournalList({ outfits: initial }: { outfits: Outfit[] }) {
             </button>
           )}
           {!editing && (
-            <div className="flex items-center bg-[oklch(0.90_0.008_70)] rounded-lg p-0.5 gap-0.5">
+            <div className="flex items-center bg-[oklch(0.91_0.004_90)] rounded-lg p-0.5 gap-0.5">
               <button
                 onClick={() => setView("feed")}
                 className={`px-3 py-1.5 text-[10px] tracking-[0.1em] uppercase rounded-md transition-colors ${
@@ -178,7 +178,7 @@ export function JournalList({ outfits: initial }: { outfits: Outfit[] }) {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search by item or occasion…"
-            className="w-full h-10 bg-[oklch(0.90_0.008_70)] rounded-lg pl-9 pr-9 text-sm text-[oklch(0.15_0.04_255)] placeholder:text-[oklch(0.62_0.006_255)] outline-none focus:ring-1 focus:ring-[oklch(0.90_0.008_70)] transition-all"
+            className="w-full h-10 bg-[oklch(0.91_0.004_90)] rounded-lg pl-9 pr-9 text-sm text-[oklch(0.15_0.04_255)] placeholder:text-[oklch(0.62_0.006_255)] outline-none focus:ring-1 focus:ring-[oklch(0.91_0.004_90)] transition-all"
           />
           {search && (
             <button
@@ -198,8 +198,8 @@ export function JournalList({ outfits: initial }: { outfits: Outfit[] }) {
             onClick={() => setFavoritesOnly(f => !f)}
             className={`flex items-center gap-1.5 shrink-0 h-8 px-3 rounded-full text-xs transition-colors ${
               favoritesOnly
-                ? "bg-[oklch(0.15_0.04_255)] text-[oklch(0.90_0.008_70)]"
-                : "bg-[oklch(0.90_0.008_70)] text-[oklch(0.45_0.008_255)]"
+                ? "bg-[oklch(0.15_0.04_255)] text-[oklch(0.91_0.004_90)]"
+                : "bg-[oklch(0.91_0.004_90)] text-[oklch(0.45_0.008_255)]"
             }`}
           >
             <Heart size={11} className={favoritesOnly ? "fill-current" : ""} />
@@ -212,8 +212,8 @@ export function JournalList({ outfits: initial }: { outfits: Outfit[] }) {
               onClick={() => setOccasionFilter(prev => (prev === occ ? null : occ))}
               className={`shrink-0 h-8 px-3 rounded-full text-xs transition-colors ${
                 occasionFilter === occ
-                  ? "bg-[oklch(0.15_0.04_255)] text-[oklch(0.90_0.008_70)]"
-                  : "bg-[oklch(0.90_0.008_70)] text-[oklch(0.45_0.008_255)]"
+                  ? "bg-[oklch(0.15_0.04_255)] text-[oklch(0.91_0.004_90)]"
+                  : "bg-[oklch(0.91_0.004_90)] text-[oklch(0.45_0.008_255)]"
               }`}
             >
               {occ}
@@ -250,15 +250,15 @@ export function JournalList({ outfits: initial }: { outfits: Outfit[] }) {
               <p className="text-[oklch(0.52_0.015_255)] text-sm">No outfits match.</p>
             </div>
           ) : (
-            <div className="space-y-10 pb-4">
+            <div className="space-y-6 pb-4">
               {groups.map(({ label, outfits: group }) => (
                 <section key={label}>
-                  <p className="text-[10px] tracking-[0.25em] uppercase text-[oklch(0.52_0.015_255)] mb-4">
+                  <p className="text-[10px] tracking-[0.25em] uppercase text-[oklch(0.52_0.015_255)] mb-3">
                     {label}
                   </p>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-white rounded-2xl overflow-hidden divide-y divide-[oklch(0.93_0.003_90)]">
                     {group.map(outfit => (
-                      <OutfitCard
+                      <OutfitListItem
                         key={outfit.id}
                         outfit={outfit}
                         editing={editing}

@@ -23,7 +23,7 @@ export function BottomNav() {
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[oklch(0.93_0.02_70)] border-t border-[oklch(0.87_0.012_70)]">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[oklch(0.94_0.006_90)] border-t border-[oklch(0.89_0.005_90)]">
       <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-2 relative">
         {/* Left tabs */}
         {LEFT_TABS.map(({ href, label, Icon }) => (

@@ -191,7 +191,7 @@ export async function IntelligenceLayer({ outfitId, items, occasion, userId }: P
           <p className="text-[10px] tracking-[0.25em] uppercase text-[oklch(0.62_0.008_255)] mb-3">
             Garment history
           </p>
-          <div className="divide-y divide-[oklch(0.87_0.012_70)]">
+          <div className="divide-y divide-[oklch(0.89_0.005_90)]">
             {items.map((item, i) => {
               const info = garmentMap.get(item.name)
               if (!info) return null

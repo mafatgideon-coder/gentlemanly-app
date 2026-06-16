@@ -70,7 +70,7 @@ export function WeekStrip({ weekOutfits }: WeekStripProps) {
                   <div className={`w-full h-full flex items-center justify-center ${
                     isToday
                       ? "bg-[oklch(0.22_0.07_255)]/10"
-                      : "bg-[oklch(0.90_0.008_70)]"
+                      : "bg-[oklch(0.91_0.004_90)]"
                   }`}>
                     {isToday && (
                       <div className="w-1 h-1 rounded-full bg-[oklch(0.22_0.07_255)]" />

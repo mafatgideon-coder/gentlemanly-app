@@ -65,7 +65,7 @@ export function OutfitActions({ id, isFavorite, occasion, notes }: OutfitActions
       <div className="flex items-center gap-1">
         <button
           onClick={toggleFavorite}
-          className="w-9 h-9 flex items-center justify-center rounded-lg transition-colors hover:bg-[oklch(0.90_0.008_70)]"
+          className="w-9 h-9 flex items-center justify-center rounded-lg transition-colors hover:bg-[oklch(0.91_0.004_90)]"
           aria-label={favorite ? "Remove from favorites" : "Add to favorites"}
         >
           <Heart
@@ -75,7 +75,7 @@ export function OutfitActions({ id, isFavorite, occasion, notes }: OutfitActions
         </button>
         <button
           onClick={() => setEditOpen(true)}
-          className="w-9 h-9 flex items-center justify-center rounded-lg transition-colors hover:bg-[oklch(0.90_0.008_70)]"
+          className="w-9 h-9 flex items-center justify-center rounded-lg transition-colors hover:bg-[oklch(0.91_0.004_90)]"
           aria-label="Edit outfit"
         >
           <Pencil size={16} className="text-[oklch(0.62_0.006_255)]" />
@@ -85,10 +85,10 @@ export function OutfitActions({ id, isFavorite, occasion, notes }: OutfitActions
       <Sheet open={editOpen} onOpenChange={setEditOpen}>
         <SheetContent
           side="bottom"
-          className="bg-white border-t border-[oklch(0.87_0.012_70)] rounded-t-2xl px-5 pb-10"
+          className="bg-white border-t border-[oklch(0.89_0.005_90)] rounded-t-2xl px-5 pb-10"
         >
           <div className="flex justify-center pt-3 pb-4">
-            <div className="w-10 h-1 rounded-full bg-[oklch(0.87_0.012_70)]" />
+            <div className="w-10 h-1 rounded-full bg-[oklch(0.89_0.005_90)]" />
           </div>
 
           <SheetHeader className="mb-5">
@@ -103,15 +103,15 @@ export function OutfitActions({ id, isFavorite, occasion, notes }: OutfitActions
                 Occasion
               </label>
               <Select value={editOccasion} onValueChange={v => setEditOccasion(v ?? "")}>
-                <SelectTrigger className="bg-[oklch(0.93_0.02_70)] border-[oklch(0.87_0.012_70)] text-[oklch(0.22_0.04_255)] h-11 rounded-lg">
+                <SelectTrigger className="bg-[oklch(0.94_0.006_90)] border-[oklch(0.89_0.005_90)] text-[oklch(0.22_0.04_255)] h-11 rounded-lg">
                   <SelectValue placeholder="Select occasion" />
                 </SelectTrigger>
-                <SelectContent className="bg-white border-[oklch(0.87_0.012_70)]">
+                <SelectContent className="bg-white border-[oklch(0.89_0.005_90)]">
                   {OCCASIONS.map(o => (
                     <SelectItem
                       key={o}
                       value={o}
-                      className="text-[oklch(0.22_0.04_255)] focus:bg-[oklch(0.93_0.02_70)] focus:text-[oklch(0.15_0.04_255)]"
+                      className="text-[oklch(0.22_0.04_255)] focus:bg-[oklch(0.94_0.006_90)] focus:text-[oklch(0.15_0.04_255)]"
                     >
                       {o}
                     </SelectItem>
@@ -128,7 +128,7 @@ export function OutfitActions({ id, isFavorite, occasion, notes }: OutfitActions
                 value={editNotes}
                 onChange={e => setEditNotes(e.target.value)}
                 placeholder="Add a note…"
-                className="bg-[oklch(0.93_0.02_70)] border-[oklch(0.87_0.012_70)] text-[oklch(0.22_0.04_255)] placeholder:text-[oklch(0.62_0.010_255)] rounded-lg resize-none min-h-20"
+                className="bg-[oklch(0.94_0.006_90)] border-[oklch(0.89_0.005_90)] text-[oklch(0.22_0.04_255)] placeholder:text-[oklch(0.62_0.010_255)] rounded-lg resize-none min-h-20"
               />
             </div>
 

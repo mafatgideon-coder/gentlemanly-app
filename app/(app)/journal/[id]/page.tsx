@@ -31,7 +31,7 @@ export default async function OutfitDetailPage({
   const displayImage = outfit.flatlay_url ?? outfit.photo_url
 
   return (
-    <div className="min-h-screen bg-[oklch(0.93_0.02_70)]">
+    <div className="min-h-screen bg-[oklch(0.94_0.006_90)]">
       {/* Top nav */}
       <div className="px-5 pt-12 pb-2 flex items-center justify-between">
         <Link
@@ -62,7 +62,7 @@ export default async function OutfitDetailPage({
 
       {/* Editorial image */}
       <div className="px-4">
-        <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-[oklch(0.88_0.012_70)] shadow-sm">
+        <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-[oklch(0.89_0.005_90)] shadow-sm">
           {displayImage ? (
             <Image
               src={displayImage}
@@ -92,7 +92,7 @@ export default async function OutfitDetailPage({
           <p className="text-[10px] tracking-[0.25em] uppercase text-[oklch(0.52_0.015_255)] mb-3">
             What was worn
           </p>
-          <div className="divide-y divide-[oklch(0.87_0.012_70)]">
+          <div className="divide-y divide-[oklch(0.89_0.005_90)]">
             {outfit.items.map((item, i) => (
               <div key={i} className="flex items-center gap-4 py-3">
                 <span className="text-[10px] tracking-widest uppercase text-[oklch(0.55_0.010_255)] w-24 shrink-0">

@@ -22,7 +22,7 @@ export function OutfitCard({ outfit, editing, selected, onToggle }: OutfitCardPr
 
   const inner = (
     <>
-      <div className="relative aspect-square w-full bg-[oklch(0.90_0.008_70)] rounded-sm overflow-hidden">
+      <div className="relative aspect-square w-full bg-[oklch(0.91_0.004_90)] rounded-sm overflow-hidden">
         {image ? (
           <Image
             src={image}
