@@ -183,6 +183,9 @@ CREATE POLICY "Service role can update flatlay images"
   USING (bucket_id = 'flatlay-images');
 
 
+-- ── Phase 2: Recall ──────────────────────────────────────────
+ALTER TABLE outfits ADD COLUMN IF NOT EXISTS is_favorite boolean DEFAULT false;
+
 -- ── Outfit items (jsonb) — v2.1 Journal-First ────────────────
 -- Stores detected clothing items directly on the outfit row.
 -- Run this after the initial schema if the column doesn't exist yet.

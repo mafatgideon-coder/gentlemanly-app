@@ -4,6 +4,7 @@ import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import { formatDate } from "@/lib/utils"
 import { notFound } from "next/navigation"
+import { OutfitActions } from "@/components/journal/OutfitActions"
 import type { Outfit } from "@/lib/types"
 
 export default async function OutfitDetailPage({
@@ -29,8 +30,8 @@ export default async function OutfitDetailPage({
 
   return (
     <div className="min-h-screen bg-[oklch(0.965_0.003_247)]">
-      {/* Back nav */}
-      <div className="px-5 pt-12 pb-2">
+      {/* Top nav */}
+      <div className="px-5 pt-12 pb-2 flex items-center justify-between">
         <Link
           href="/journal"
           className="inline-flex items-center gap-2 text-[oklch(0.6_0.006_255)] hover:text-[oklch(0.28_0.008_255)] transition-colors text-sm"
@@ -38,6 +39,13 @@ export default async function OutfitDetailPage({
           <ArrowLeft size={16} />
           Journal
         </Link>
+
+        <OutfitActions
+          id={outfit.id}
+          isFavorite={outfit.is_favorite}
+          occasion={outfit.occasion}
+          notes={outfit.notes}
+        />
       </div>
 
       {/* Date + occasion */}
@@ -77,7 +85,7 @@ export default async function OutfitDetailPage({
       )}
 
       {/* Items worn */}
-      {outfit.items && outfit.items.length > 0 && (
+      {outfit.items && outfit.items.length > 0 ? (
         <div className="px-5 pt-6 pb-28">
           <p className="text-[10px] tracking-[0.25em] uppercase text-[oklch(0.62_0.008_255)] mb-3">
             What was worn
@@ -93,10 +101,7 @@ export default async function OutfitDetailPage({
             ))}
           </div>
         </div>
-      )}
-
-      {/* Bottom padding when no items */}
-      {(!outfit.items || outfit.items.length === 0) && (
+      ) : (
         <div className="pb-28" />
       )}
     </div>

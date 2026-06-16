@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { Check } from "lucide-react"
+import { Check, Heart } from "lucide-react"
 import { formatShortDate } from "@/lib/utils"
 
 function dayOfWeek(dateString: string): string {
@@ -33,6 +33,13 @@ export function OutfitCard({ outfit, editing, selected, onToggle }: OutfitCardPr
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <span className="text-[oklch(0.6_0.006_255)] text-xs">No image</span>
+          </div>
+        )}
+
+        {/* Favorite indicator */}
+        {!editing && outfit.is_favorite && (
+          <div className="absolute top-2 right-2">
+            <Heart size={12} className="fill-white text-white drop-shadow-sm" />
           </div>
         )}
 

@@ -22,6 +22,7 @@ export interface Outfit {
   notes: string | null
   item_count: number
   items: DetectedItem[] | null
+  is_favorite: boolean
   logged_at: string
   created_at: string
 }

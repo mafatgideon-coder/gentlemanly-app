@@ -8,7 +8,7 @@ export default async function JournalPage() {
 
   const { data } = await supabase
     .from("outfits")
-    .select("id, photo_url, flatlay_url, occasion, item_count, logged_at")
+    .select("id, photo_url, flatlay_url, occasion, item_count, is_favorite, items, logged_at")
     .eq("user_id", user!.id)
     .order("logged_at", { ascending: false })
 
