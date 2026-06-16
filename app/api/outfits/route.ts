@@ -48,7 +48,7 @@ export async function POST(request: Request) {
 
   const { data: outfit, error: outfitError } = await supabase
     .from("outfits")
-    .insert({ user_id: user.id, photo_url, flatlay_url: null, occasion, notes, item_count: items.length })
+    .insert({ user_id: user.id, photo_url, flatlay_url: null, occasion, notes, item_count: items.length, items })
     .select()
     .single()
 

@@ -40,7 +40,7 @@ export default function LoginPage() {
           Gentlemanly
         </h1>
         <p className="text-sm text-[oklch(0.52_0.012_255)]">
-          Your wardrobe memory
+          Your personal style journal
         </p>
       </div>
 

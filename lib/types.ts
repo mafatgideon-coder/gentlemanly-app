@@ -21,6 +21,7 @@ export interface Outfit {
   occasion: string | null
   notes: string | null
   item_count: number
+  items: DetectedItem[] | null
   logged_at: string
   created_at: string
 }
