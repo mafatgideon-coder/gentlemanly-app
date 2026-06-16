@@ -37,15 +37,15 @@ export function WeekStrip({ weekOutfits }: WeekStripProps) {
   })
 
   return (
-    <div className="px-5 pb-6">
-      <p className="text-[10px] tracking-[0.25em] uppercase text-[oklch(0.38_0.008_255)] mb-3">
+    <div className="px-5 pt-3 pb-3">
+      <p className="text-[9px] tracking-[0.25em] uppercase text-[oklch(0.38_0.008_255)] mb-2">
         This week
       </p>
-      <div className="grid grid-cols-7 gap-1.5">
+      <div className="grid grid-cols-7 gap-1">
         {days.map(({ date, outfit, isToday, isFuture }, i) => {
           const image = outfit?.flatlay_url ?? outfit?.photo_url
           const slot = (
-            <div className="flex flex-col items-center gap-1.5">
+            <div className="flex flex-col items-center gap-1">
               <span className={`text-[10px] font-medium tracking-wide ${
                 isToday
                   ? "text-[oklch(0.92_0.003_247)]"
