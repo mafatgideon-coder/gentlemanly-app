@@ -47,6 +47,7 @@ export default async function OutfitDetailPage({
           isFavorite={outfit.is_favorite}
           occasion={outfit.occasion}
           notes={outfit.notes}
+          loggedAt={outfit.logged_at}
         />
       </div>
 

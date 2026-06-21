@@ -72,6 +72,18 @@ function dayLabel(dateString: string): string {
   return new Date(dateString).toLocaleDateString("en-US", opts)
 }
 
+export function relativeDay(dateString: string): string {
+  const date = new Date(dateString)
+  const today = new Date()
+  const diffDays = Math.floor(
+    (today.setHours(0, 0, 0, 0) - new Date(dateString).setHours(0, 0, 0, 0)) / 86_400_000
+  )
+  if (diffDays === 0) return "today"
+  if (diffDays === 1) return "yesterday"
+  if (diffDays < 7) return date.toLocaleDateString("en-US", { weekday: "long" })
+  return date.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })
+}
+
 export function entryDateLabel(dateString: string): string {
   const date = new Date(dateString)
   const today = new Date()

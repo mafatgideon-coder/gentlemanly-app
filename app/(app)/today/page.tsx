@@ -1,12 +1,9 @@
 import { createClient } from "@/lib/supabase/server"
 import { HomeScreen } from "@/components/today/HomeScreen"
+import { MemoryLayer } from "@/components/today/MemoryLayer"
 import { isToday } from "@/lib/utils"
+import { Suspense } from "react"
 import type { Outfit } from "@/lib/types"
-
-export interface MemoryItem {
-  label: string
-  outfit: Outfit
-}
 
 function startOfISOWeek(): Date {
   const d = new Date()
@@ -17,41 +14,13 @@ function startOfISOWeek(): Date {
   return d
 }
 
-function lastSundayRange() {
-  const now = new Date()
-  const daysAgo = now.getDay() === 0 ? 7 : now.getDay()
-  const d = new Date(now)
-  d.setDate(now.getDate() - daysAgo)
-  return {
-    start: new Date(d.getFullYear(), d.getMonth(), d.getDate()).toISOString(),
-    end: new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999).toISOString(),
-  }
-}
-
-function oneYearAgoRange() {
-  const now = new Date()
-  return {
-    start: new Date(now.getFullYear() - 1, now.getMonth(), now.getDate()).toISOString(),
-    end: new Date(now.getFullYear() - 1, now.getMonth(), now.getDate(), 23, 59, 59, 999).toISOString(),
-  }
-}
-
 export default async function TodayPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   const weekStart = startOfISOWeek()
-  const sunday = lastSundayRange()
-  const yearAgo = oneYearAgoRange()
 
-  const [
-    { data: weekRaw },
-    { data: sundayRaw },
-    { data: yearAgoRaw },
-    { data: churchRaw },
-    { data: favoriteRaw },
-    { data: recentRaw },
-  ] = await Promise.all([
+  const [{ data: weekRaw }, { data: recentRaw }] = await Promise.all([
     supabase.from("outfits")
       .select("id, photo_url, flatlay_url, occasion, item_count, is_favorite, logged_at")
       .eq("user_id", user!.id)
@@ -59,75 +28,37 @@ export default async function TodayPage() {
       .order("logged_at", { ascending: false }),
 
     supabase.from("outfits")
-      .select("id, photo_url, flatlay_url, occasion, logged_at")
-      .eq("user_id", user!.id)
-      .gte("logged_at", sunday.start)
-      .lte("logged_at", sunday.end)
-      .order("logged_at", { ascending: false })
-      .limit(1),
-
-    supabase.from("outfits")
-      .select("id, photo_url, flatlay_url, occasion, logged_at")
-      .eq("user_id", user!.id)
-      .gte("logged_at", yearAgo.start)
-      .lte("logged_at", yearAgo.end)
-      .order("logged_at", { ascending: false })
-      .limit(1),
-
-    supabase.from("outfits")
-      .select("id, photo_url, flatlay_url, occasion, logged_at")
-      .eq("user_id", user!.id)
-      .eq("occasion", "Church")
-      .order("logged_at", { ascending: false })
-      .limit(1),
-
-    supabase.from("outfits")
-      .select("id, photo_url, flatlay_url, occasion, logged_at")
-      .eq("user_id", user!.id)
-      .eq("is_favorite", true)
-      .order("logged_at", { ascending: false })
-      .limit(1),
-
-    supabase.from("outfits")
-      .select("id, photo_url, flatlay_url, occasion, logged_at")
+      .select("id, photo_url, flatlay_url, occasion, item_count, is_favorite, logged_at")
       .eq("user_id", user!.id)
       .order("logged_at", { ascending: false })
-      .limit(5),
+      .limit(6),
   ])
 
   const weekOutfits = (weekRaw ?? []) as Outfit[]
   const todayOutfit = weekOutfits.find(o => isToday(o.logged_at)) ?? null
   const allRecent = (recentRaw ?? []) as Outfit[]
 
-  // Primary card background: today if logged, else most recent
-  const primaryOutfit = todayOutfit ?? allRecent[0] ?? null
+  // Context thumbnail for the not-logged-yet state
+  const contextOutfit = todayOutfit ? null : allRecent[0] ?? null
 
-  // Recent entries: last 3 excluding today
+  // De-emphasized recent list, lower on the page — excludes today
   const recentEntries = allRecent
     .filter(o => !todayOutfit || o.id !== todayOutfit.id)
     .slice(0, 3)
 
-  // Memories — deduplicated by outfit id
-  const seenIds = new Set<string>()
-  const memories: MemoryItem[] = [
-    sundayRaw?.[0] ? { label: "Last Sunday", outfit: sundayRaw[0] as Outfit } : null,
-    yearAgoRaw?.[0] ? { label: "One year ago today", outfit: yearAgoRaw[0] as Outfit } : null,
-    churchRaw?.[0] ? { label: "Recent Church", outfit: churchRaw[0] as Outfit } : null,
-    favoriteRaw?.[0] ? { label: "Saved outfit", outfit: favoriteRaw[0] as Outfit } : null,
-  ].filter((item): item is MemoryItem => {
-    if (!item) return false
-    if (seenIds.has(item.outfit.id)) return false
-    seenIds.add(item.outfit.id)
-    return true
-  })
+  // Anchor for "most recent occasion" reflection + its memory card
+  const recentOccasionEntry = recentEntries[0] ?? null
 
   return (
     <HomeScreen
       todayOutfit={todayOutfit}
       weekOutfits={weekOutfits}
-      primaryOutfit={primaryOutfit}
-      memories={memories}
+      contextOutfit={contextOutfit}
       recentEntries={recentEntries}
-    />
+    >
+      <Suspense fallback={null}>
+        <MemoryLayer userId={user!.id} recentOccasionEntry={recentOccasionEntry} />
+      </Suspense>
+    </HomeScreen>
   )
 }

@@ -38,6 +38,7 @@ export async function PATCH(
   if ("occasion" in body) updates.occasion = body.occasion
   if ("notes" in body) updates.notes = body.notes
   if ("is_favorite" in body) updates.is_favorite = body.is_favorite
+  if ("logged_at" in body) updates.logged_at = body.logged_at
 
   const { error } = await supabase
     .from("outfits")

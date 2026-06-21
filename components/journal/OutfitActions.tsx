@@ -24,14 +24,16 @@ interface OutfitActionsProps {
   isFavorite: boolean
   occasion: string | null
   notes: string | null
+  loggedAt: string
 }
 
-export function OutfitActions({ id, isFavorite, occasion, notes }: OutfitActionsProps) {
+export function OutfitActions({ id, isFavorite, occasion, notes, loggedAt }: OutfitActionsProps) {
   const router = useRouter()
   const [favorite, setFavorite] = useState(isFavorite)
   const [editOpen, setEditOpen] = useState(false)
   const [editOccasion, setEditOccasion] = useState(occasion ?? "")
   const [editNotes, setEditNotes] = useState(notes ?? "")
+  const [editDate, setEditDate] = useState(() => new Date(loggedAt).toISOString().slice(0, 10))
   const [saving, setSaving] = useState(false)
 
   async function toggleFavorite() {
@@ -47,12 +49,15 @@ export function OutfitActions({ id, isFavorite, occasion, notes }: OutfitActions
 
   async function saveEdit() {
     setSaving(true)
+    const [y, m, d] = editDate.split("-").map(Number)
+    const logged_at = new Date(y, m - 1, d, 12, 0, 0).toISOString()
     await fetch(`/api/outfits/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         occasion: editOccasion || null,
         notes: editNotes || null,
+        logged_at,
       }),
     })
     setSaving(false)
@@ -98,6 +103,19 @@ export function OutfitActions({ id, isFavorite, occasion, notes }: OutfitActions
           </SheetHeader>
 
           <div className="space-y-5">
+            <div className="space-y-2">
+              <label className="text-[10px] tracking-[0.2em] uppercase text-[oklch(0.52_0.015_255)]">
+                Date
+              </label>
+              <input
+                type="date"
+                value={editDate}
+                max={new Date().toISOString().slice(0, 10)}
+                onChange={e => setEditDate(e.target.value)}
+                className="w-full h-11 bg-[oklch(0.94_0.006_90)] border border-[oklch(0.89_0.005_90)] text-[oklch(0.22_0.04_255)] rounded-lg px-3 text-sm outline-none focus:border-[oklch(0.62_0.008_255)] transition-colors"
+              />
+            </div>
+
             <div className="space-y-2">
               <label className="text-[10px] tracking-[0.2em] uppercase text-[oklch(0.52_0.015_255)]">
                 Occasion
