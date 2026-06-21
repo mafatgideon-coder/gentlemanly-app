@@ -24,7 +24,10 @@ Subcategories for footwear: sneakers | loafers | boots | dress_shoes
 Subcategories for accessories: belt | watch | hat | bag
 
 Be specific with colors (e.g., "navy blue", "off-white", "burgundy").
-Only include items clearly visible in the image.`
+
+Rules:
+- Only include clothing and accessories being worn or carried by the person. Do not include any non-clothing objects in the image (e.g. water bottles, cups, bags that are not worn, furniture, phones, food, or anything held that is not a garment or accessory).
+- Always list a belt as its own separate item in the accessories category. Never combine a belt with pants, trousers, or any other item.`
 
 export async function detectClothing(photoUrl: string): Promise<DetectedItem[]> {
   const response = await client.chat.completions.create({
