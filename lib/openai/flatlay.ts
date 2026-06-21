@@ -10,7 +10,7 @@ export async function generateFlatlayFromGrid(gridBuffer: Buffer, items: Detecte
   const response = await client.images.edit({
     model: "gpt-image-1",
     image: imageFile,
-    prompt: `These are individual clothing items shown separately. Recreate them as a single editorial menswear flat-lay photograph. Arrange each piece naturally and artistically on a clean off-white linen background. Items: ${descriptions}. Style of Mr Porter or Matches Fashion product photography. Soft diffused natural lighting from above. No shadows. No human models. No text. No logos. Square composition. Quiet luxury aesthetic.`,
+    prompt: `These are individual clothing items shown separately. Recreate them as a single editorial menswear flat-lay photograph. Arrange each piece naturally and artistically on a clean off-white linen background. Items: ${descriptions}. ${FLATLAY_RULES} Style of Mr Porter or Matches Fashion product photography. Soft diffused natural lighting from above. No shadows. No human models. No text. No logos. Square composition. Quiet luxury aesthetic.`,
     n: 1,
     size: "1024x1024",
   })
@@ -20,16 +20,18 @@ export async function generateFlatlayFromGrid(gridBuffer: Buffer, items: Detecte
   return Buffer.from(b64, "base64")
 }
 
+const FLATLAY_RULES = `Every item must be placed as a completely separate, physically distinct piece — do not place any item inside, on top of, or threaded through another item. Belts must always be laid flat on their own, never inside a waistband or draped on trousers. Only include the listed clothing items — no props, accessories not listed, or background objects.`
+
 function buildPrompt(items: DetectedItem[], withPhoto: boolean): string {
   const descriptions = items.length > 0
     ? items.map((i) => i.description).join(", ")
     : "a complete menswear outfit"
 
   if (withPhoto) {
-    return `Using this outfit photo as a visual reference, create an editorial menswear flat-lay. Arrange each clothing item neatly on a clean off-white linen background — preserving the exact colors, patterns, textures, and details visible in the photo. Items: ${descriptions}. Style of Mr Porter or Matches Fashion product photography. Soft diffused natural lighting from above. No shadows. No human models. No text. No logos visible. Square composition. Quiet luxury aesthetic.`
+    return `Using this outfit photo as a visual reference, create an editorial menswear flat-lay. Arrange each clothing item neatly on a clean off-white linen background — preserving the exact colors, patterns, textures, and details visible in the photo. Items: ${descriptions}. ${FLATLAY_RULES} Style of Mr Porter or Matches Fashion product photography. Soft diffused natural lighting from above. No shadows. No human models. No text. No logos visible. Square composition. Quiet luxury aesthetic.`
   }
 
-  return `Editorial menswear flat-lay photograph on a clean off-white linen background. Premium product photography in the style of Mr Porter or Matches Fashion. Neatly arranged clothing items laid flat: ${descriptions}. Soft diffused natural lighting from above. No shadows. No human models. No text. No logos. Square composition. Quiet luxury aesthetic.`
+  return `Editorial menswear flat-lay photograph on a clean off-white linen background. Premium product photography in the style of Mr Porter or Matches Fashion. Neatly arranged clothing items laid flat: ${descriptions}. ${FLATLAY_RULES} Soft diffused natural lighting from above. No shadows. No human models. No text. No logos. Square composition. Quiet luxury aesthetic.`
 }
 
 export async function generateFlatlay(items: DetectedItem[], photoBuffer?: Buffer): Promise<Buffer> {
