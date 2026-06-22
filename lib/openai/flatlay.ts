@@ -45,7 +45,7 @@ export async function generateFlatlay(items: DetectedItem[], photoBuffer?: Buffe
       image: imageFile,
       prompt: buildPrompt(items, true),
       n: 1,
-      size: "1024x1024",
+      size: "1024x1536",
     })
     b64 = response.data?.[0]?.b64_json
   } else {
@@ -54,7 +54,7 @@ export async function generateFlatlay(items: DetectedItem[], photoBuffer?: Buffe
       model: "gpt-image-1",
       prompt: buildPrompt(items, false),
       n: 1,
-      size: "1024x1024",
+      size: "1024x1536",
     })
     b64 = response.data?.[0]?.b64_json
   }
