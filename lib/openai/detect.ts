@@ -12,7 +12,10 @@ Return ONLY a valid JSON array with this exact structure — no markdown, no exp
     "category": "tops",
     "subcategory": "oxford_shirt",
     "color": "white",
-    "description": "Crisp white oxford shirt with button-down collar"
+    "pattern": "solid",
+    "description": "Crisp white oxford shirt with button-down collar",
+    "confidence": 0.97,
+    "bbox": [0.12, 0.05, 0.88, 0.52]
   }
 ]
 
@@ -24,9 +27,12 @@ Subcategories for footwear: sneakers | loafers | boots | dress_shoes
 Subcategories for accessories: belt | watch | hat
 
 Be specific with colors (e.g., "navy blue", "off-white", "burgundy").
+pattern must be one of: solid | striped | plaid | checkered | floral | graphic | herringbone | houndstooth | camo | other
+confidence is a float 0.0–1.0 representing how certain you are this item is present.
+bbox is [x1, y1, x2, y2] as fractions of image width/height (0.0–1.0), tightly bounding the garment as it appears in the photo.
 
 Rules:
-- Only include clothing items and accessories that are being worn on the body (shirts, trousers, shoes, belts, watches, hats). Do not include bags, backpacks, or any carried/held items. Do not include props, furniture, food, drinks, phones, or any non-clothing objects.
+- Only include clothing items and accessories being worn on the body (shirts, trousers, shoes, belts, watches, hats). Do not include bags, backpacks, or any carried/held items. Do not include props, furniture, food, drinks, phones, or any non-clothing objects.
 - Always list a belt as its own separate item in the accessories category. Never combine a belt with pants, trousers, or any other item.`
 
 export async function detectClothing(photoUrl: string): Promise<DetectedItem[]> {
@@ -47,8 +53,15 @@ export async function detectClothing(photoUrl: string): Promise<DetectedItem[]> 
   const content = response.choices[0]?.message?.content ?? "[]"
 
   try {
-    const items = JSON.parse(content) as DetectedItem[]
-    return Array.isArray(items) ? items : []
+    const raw = JSON.parse(content)
+    const items = Array.isArray(raw) ? raw : []
+    // Backfill defaults for fields that may be absent (V1 compatibility)
+    return items.map((item: DetectedItem) => ({
+      ...item,
+      pattern: item.pattern ?? "solid",
+      confidence: item.confidence ?? 1.0,
+      bbox: item.bbox ?? null,
+    }))
   } catch {
     return []
   }

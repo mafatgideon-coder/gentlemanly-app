@@ -10,7 +10,10 @@ export interface DetectedItem {
   category: Category
   subcategory: string
   color: string
+  pattern: string
   description: string
+  confidence: number
+  bbox: [number, number, number, number] | null // [x1, y1, x2, y2] normalized 0–1
 }
 
 export interface Outfit {
