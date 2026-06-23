@@ -45,6 +45,10 @@ export async function proxy(request: NextRequest) {
     )
   }
 
+  if (pathname.startsWith("/admin") && user?.email !== process.env.ADMIN_EMAIL) {
+    return NextResponse.redirect(new URL("/today", request.url))
+  }
+
   return supabaseResponse
 }
 
