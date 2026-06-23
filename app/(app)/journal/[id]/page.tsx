@@ -63,7 +63,7 @@ export default async function OutfitDetailPage({
 
       {/* Editorial image */}
       <div className="px-4">
-        <div className="relative w-full aspect-square rounded-2xl overflow-hidden bg-[oklch(0.89_0.005_90)] shadow-sm">
+        <div className="relative w-full aspect-[2/3] rounded-2xl overflow-hidden bg-[oklch(0.89_0.005_90)] shadow-sm">
           {displayImage ? (
             <Image
               src={displayImage}

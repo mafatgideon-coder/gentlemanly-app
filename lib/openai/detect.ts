@@ -21,12 +21,12 @@ Subcategories for tops: t_shirt | polo | oxford_shirt | dress_shirt | sweater
 Subcategories for bottoms: jeans | chinos | trousers
 Subcategories for outerwear: blazer | jacket | coat
 Subcategories for footwear: sneakers | loafers | boots | dress_shoes
-Subcategories for accessories: belt | watch | hat | bag
+Subcategories for accessories: belt | watch | hat
 
 Be specific with colors (e.g., "navy blue", "off-white", "burgundy").
 
 Rules:
-- Only include clothing and accessories being worn or carried by the person. Do not include any non-clothing objects in the image (e.g. water bottles, cups, bags that are not worn, furniture, phones, food, or anything held that is not a garment or accessory).
+- Only include clothing items and accessories that are being worn on the body (shirts, trousers, shoes, belts, watches, hats). Do not include bags, backpacks, or any carried/held items. Do not include props, furniture, food, drinks, phones, or any non-clothing objects.
 - Always list a belt as its own separate item in the accessories category. Never combine a belt with pants, trousers, or any other item.`
 
 export async function detectClothing(photoUrl: string): Promise<DetectedItem[]> {
