@@ -1,6 +1,6 @@
 import sharp from "sharp"
 import { createClient as createServiceClient } from "@supabase/supabase-js"
-import { segmentGarment } from "@/lib/replicate/sam"
+import { generateMasks, matchMaskToBbox } from "@/lib/replicate/sam"
 import { compositeGarments } from "./composite"
 import type { PipelineInput, PipelineResult } from "./types"
 import type { DetectedItem } from "@/lib/types"
@@ -19,25 +19,23 @@ async function downloadBuffer(url: string): Promise<Buffer> {
 }
 
 /**
- * Applies a grayscale SAM 2 mask to the original image, producing a
+ * Applies a grayscale SAM 2 mask buffer to the original image, producing a
  * transparent-background PNG of the isolated garment.
  */
-async function applyMask(originalBuffer: Buffer, maskUrl: string): Promise<Buffer> {
-  const maskBuffer = await downloadBuffer(maskUrl)
-
-  const { data: origData, info } = await sharp(originalBuffer)
+async function applyMask(originalBuffer: Buffer, maskBuffer: Buffer, imgW: number, imgH: number): Promise<Buffer> {
+  const { data: origData } = await sharp(originalBuffer)
     .removeAlpha()
     .raw()
     .toBuffer({ resolveWithObject: true })
 
   const maskData = await sharp(maskBuffer)
-    .resize(info.width, info.height, { fit: "fill" })
+    .resize(imgW, imgH, { fit: "fill" })
     .greyscale()
     .raw()
     .toBuffer()
 
-  return sharp(origData, { raw: { width: info.width, height: info.height, channels: 3 } })
-    .joinChannel(maskData, { raw: { width: info.width, height: info.height, channels: 1 } })
+  return sharp(origData, { raw: { width: imgW, height: imgH, channels: 3 } })
+    .joinChannel(maskData, { raw: { width: imgW, height: imgH, channels: 1 } })
     .png()
     .toBuffer()
 }
@@ -113,7 +111,10 @@ export async function runV2Pipeline(input: PipelineInput): Promise<PipelineResul
     const { width: origW, height: origH } = await sharp(originalBuffer).metadata()
     if (!origW || !origH) throw new Error("Could not read image dimensions")
 
-    const itemsWithBbox = input.items.filter(item => Array.isArray(item.bbox) && item.bbox.length === 4)
+    const itemsWithBbox = input.items.filter(
+      (item): item is DetectedItem & { bbox: [number, number, number, number] } =>
+        Array.isArray(item.bbox) && item.bbox.length === 4
+    )
 
     if (itemsWithBbox.length === 0) {
       return {
@@ -124,20 +125,20 @@ export async function runV2Pipeline(input: PipelineInput): Promise<PipelineResul
       }
     }
 
-    // Segment all garments in parallel
+    // Run SAM 2 once for the full image
+    console.log(`[v2] generating SAM 2 masks for outfit ${input.outfitId}`)
+    const allMasks = await generateMasks(input.photoUrl)
+    console.log(`[v2] SAM 2 returned ${allMasks.length} masks`)
+
+    // Match each garment to a mask and extract it
     const segmentResults = await Promise.allSettled(
       itemsWithBbox.map(async item => {
-        const [nx1, ny1, nx2, ny2] = item.bbox!
-        const pixelBbox: [number, number, number, number] = [
-          Math.round(nx1 * origW),
-          Math.round(ny1 * origH),
-          Math.round(nx2 * origW),
-          Math.round(ny2 * origH),
-        ]
+        const maskBuffer = await matchMaskToBbox(allMasks, item.bbox, origW, origH)
 
-        const maskUrl = await segmentGarment(input.photoUrl, pixelBbox)
-        const withAlpha = await applyMask(originalBuffer, maskUrl)
-        const cropped = await postProcess(withAlpha, origW, origH, item.bbox!)
+        if (!maskBuffer) throw new Error(`No mask found for "${item.name}" at bbox centroid`)
+
+        const withAlpha = await applyMask(originalBuffer, maskBuffer, origW, origH)
+        const cropped = await postProcess(withAlpha, origW, origH, item.bbox)
         const imageUrl = await saveWardrobeAsset(input.userId, input.outfitId, item, cropped, supabase)
 
         return { item, buffer: cropped, imageUrl }
@@ -149,13 +150,14 @@ export async function runV2Pipeline(input: PipelineInput): Promise<PipelineResul
       .forEach(r => console.error("[v2] garment failed:", (r as PromiseRejectedResult).reason))
 
     const garmentSlots = segmentResults
-      .filter((r): r is PromiseFulfilledResult<{ item: DetectedItem; buffer: Buffer; imageUrl: string | null }> =>
-        r.status === "fulfilled"
-      )
-      .map(r => ({ category: r.value.item.category, buffer: r.value.buffer }))
+      .filter(r => r.status === "fulfilled")
+      .map(r => {
+        const { item, buffer } = (r as PromiseFulfilledResult<{ item: DetectedItem; buffer: Buffer; imageUrl: string | null }>).value
+        return { category: item.category, buffer }
+      })
 
     if (garmentSlots.length === 0) {
-      return { flatlay_url: null, pipeline: "v2", duration_ms: Date.now() - start, error: "All segmentations failed" }
+      return { flatlay_url: null, pipeline: "v2", duration_ms: Date.now() - start, error: "All garment extractions failed" }
     }
 
     // Composite into portrait flatlay
