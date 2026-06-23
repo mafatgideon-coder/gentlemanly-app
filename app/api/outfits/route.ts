@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { createClient as createServiceClient } from "@supabase/supabase-js"
-import { generateFlatlay } from "@/lib/openai/flatlay"
+import { runPipeline } from "@/lib/pipeline"
 import { NextResponse } from "next/server"
 import type { DetectedItem } from "@/lib/types"
 
@@ -67,47 +67,18 @@ export async function POST(request: Request) {
 
   if (outfitError) return NextResponse.json({ error: outfitError.message }, { status: 500 })
 
-  let flatlayUrl: string | null = null
-  try {
-    const service = serviceClient()
+  // Route to v1 or v2 based on the user's pipeline_version in profiles
+  const result = await runPipeline({
+    userId: user.id,
+    outfitId: outfit.id,
+    photoUrl: photo_url,
+    photoStoragePath: photo_storage_path,
+    items,
+  })
 
-    // Download original photo as visual reference
-    let photoBuffer: Buffer | undefined
-    try {
-      const photoRes = await fetch(photo_url)
-      photoBuffer = Buffer.from(await photoRes.arrayBuffer())
-    } catch {
-      console.log("[img] could not download photo, using text-only fallback")
-    }
+  console.log(`[outfits] pipeline=${result.pipeline} duration=${result.duration_ms}ms${result.error ? ` error=${result.error}` : ""}`)
 
-    const flatlayBuffer = await generateFlatlay(items, photoBuffer)
-
-    const storagePath = `${user.id}/${outfit.id}/flatlay.png`
-    const { error: uploadErr } = await service.storage
-      .from("flatlay-images")
-      .upload(storagePath, flatlayBuffer, { contentType: "image/png", upsert: true })
-
-    if (uploadErr) {
-      console.error("[img] flatlay upload error:", uploadErr.message)
-    } else {
-      const { data: signed } = await service.storage
-        .from("flatlay-images")
-        .createSignedUrl(storagePath, 60 * 60 * 24 * 365)
-
-      flatlayUrl = signed?.signedUrl ?? null
-      if (flatlayUrl) {
-        await service.from("outfits").update({ flatlay_url: flatlayUrl }).eq("id", outfit.id)
-      }
-    }
-
-    if (photo_storage_path) {
-      await service.storage.from("outfit-photos").remove([photo_storage_path])
-    }
-  } catch (err) {
-    console.error("[img] error:", err instanceof Error ? err.message : err)
-  }
-
-  return NextResponse.json({ outfit: { ...outfit, flatlay_url: flatlayUrl } })
+  return NextResponse.json({ outfit: { ...outfit, flatlay_url: result.flatlay_url } })
 }
 
 export async function DELETE(request: Request) {
